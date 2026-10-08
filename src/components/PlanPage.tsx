@@ -1,3 +1,4 @@
+import { appearanceText as a } from "../i18n/appearance";
 import { zh as t } from "../i18n/zh";
 import { PageIntro } from "./PageIntro";
 import { Check, ArrowRight } from "./icons";
@@ -22,8 +23,8 @@ export function PlanPage({
   return (
     <>
       <PageIntro
-        eyebrow="ONE DAY AT A TIME"
-        title="让进步，有迹可循。"
+        eyebrow=""
+        title={a.planTitle}
         text="48 周，从基础句子到雅思准备。按自己的节奏走，阶段未达标就多留几周。"
       />
       <div className="phases">

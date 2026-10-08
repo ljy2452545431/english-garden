@@ -1,3 +1,4 @@
+import { appearanceText as a } from "../i18n/appearance";
 import { zh as t } from "../i18n/zh";
 import resources from "../data/resources.json";
 import { PageIntro } from "./PageIntro";
@@ -12,11 +13,7 @@ export function LibraryPage({
 }) {
   return (
     <>
-      <PageIntro
-        eyebrow="A SHELF OF GOOD THINGS"
-        title="需要的工具，都在花园里。"
-        text={t.resourceNote}
-      />
+      <PageIntro eyebrow="" title={a.libraryTitle} text={t.resourceNote} />
       <div className="library-tools">
         {[
           [Leaf, "词卡与间隔复习", "不需要另外安装背词软件。", "vocabulary"],
@@ -84,7 +81,10 @@ export function LibraryPage({
       <section className="paper mt-5">
         <h2>{t.officialPractice}</h2>
         <p>{t.officialLibraryNote}</p>
-        <button className="button primary" onClick={practice}>{t.officialPractice}<ArrowUpRight size={18}/></button>
+        <button className="button primary" onClick={practice}>
+          {t.officialPractice}
+          <ArrowUpRight size={18} />
+        </button>
       </section>
     </>
   );

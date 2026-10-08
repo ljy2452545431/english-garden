@@ -35,7 +35,9 @@ import { useGardenMotion } from "./hooks/useGardenMotion";
 import { GardenScene } from "./components/GardenScene";
 import { Timer } from "./components/Timer";
 import { Classroom, type Skill } from "./components/Classroom";
-import { Settings, defaults, type Preferences } from "./components/Settings";
+import { Settings } from "./components/Settings";
+import { readPreferences, type Preferences } from "./utils/preferences";
+import { appearanceText as a } from "./i18n/appearance";
 import { Together } from "./components/Together";
 
 import { PageIntro } from "./components/PageIntro";
@@ -61,26 +63,6 @@ const nav = [
 ] as const;
 const lessons = curriculum as WeeklyLesson[],
   days = plan as DailyPlan[];
-function preferences(): Preferences {
-  try {
-    const p = JSON.parse(
-      localStorage.getItem("english-garden.preferences") ?? "null",
-    );
-    if (p && ["garden", "cream", "rose", "ocean", "night"].includes(p.theme))
-      return {
-        ...defaults,
-        ...p,
-        order:
-          Array.isArray(p.order) &&
-          p.order.length === 4 &&
-          new Set(p.order).size === 4 &&
-          p.order.every((x: string) => defaults.order.includes(x))
-            ? p.order
-            : defaults.order,
-      };
-  } catch {}
-  return defaults;
-}
 const daySkills: Skill[] = [
   "grammar",
   "listening",
@@ -94,7 +76,7 @@ export default function App() {
   const garden = useGarden();
   const root = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState<Page>("today"),
-    [prefs, setPrefs] = useState<Preferences>(preferences),
+    [prefs, setPrefs] = useState<Preferences>(readPreferences),
     [selectedDay, setSelectedDay] = useState(0),
     [selectedWeek, setSelectedWeek] = useState(1),
     [skill, setSkill] = useState<Skill>("vocabulary"),
@@ -122,6 +104,14 @@ export default function App() {
     document.documentElement.dataset.density = prefs.density;
     document.documentElement.dataset.motion = prefs.motion;
     document.documentElement.dataset.font = prefs.font;
+    for (const key of [
+      "card",
+      "texture",
+      "corners",
+      "accent",
+      "layout",
+    ] as const)
+      document.documentElement.dataset[key] = prefs[key];
     try {
       localStorage.setItem("english-garden.preferences", JSON.stringify(prefs));
     } catch {}
@@ -333,7 +323,7 @@ export default function App() {
             <small>{t.brand}</small>
           </div>
         </a>
-        <span className="sidebar-caption">种下今天的小进步</span>
+        <span className="sidebar-caption">{a.sidebarCaption}</span>
         <nav>
           {nav.map(([key, label, Icon]) => (
             <button
@@ -467,19 +457,11 @@ export default function App() {
                 <section className="hero">
                   <div className="hero-copy">
                     <div className="row">
-                      <span className="eyebrow">OUR LITTLE ENGLISH GARDEN</span>
+                      <span className="eyebrow">DAILY PRACTICE</span>
                       <span className="hero-chip">第 {week} 周</span>
                     </div>
-                    <h1>
-                      慢慢来，
-                      <br />
-                      也能走很远<span>。</span>
-                    </h1>
-                    <p>
-                      今天，和搭档一起种下
-                      <br className="mobile-br" />
-                      属于你们的第 {dayNumber} 颗种子。
-                    </p>
+                    <h1>{a.todayTitle}</h1>
+                    <p>{a.todayDescription}</p>
                     <button
                       className="button primary"
                       onClick={() => classroom(daySkills[(dayNumber - 1) % 7])}
@@ -529,11 +511,13 @@ export default function App() {
                   </div>
                 </div>
                 <div className="dashboard-grid">
-                  {prefs.order.map((key) => (
-                    <div className={"module module-" + key} key={key}>
-                      {modules[key]}
-                    </div>
-                  ))}
+                  {prefs.order
+                    .filter((key) => !prefs.hidden.includes(key))
+                    .map((key) => (
+                      <div className={"module module-" + key} key={key}>
+                        {modules[key]}
+                      </div>
+                    ))}
                 </div>
               </>
             )}
@@ -553,8 +537,8 @@ export default function App() {
             {page === "classroom" && (
               <>
                 <PageIntro
-                  eyebrow="GROW YOUR ENGLISH"
-                  title="在这里，练一点真的英语。"
+                  eyebrow=""
+                  title={a.classroomTitle}
                   text={t.materialsNote}
                 />
                 <div className="lesson-week-picker">
@@ -583,9 +567,9 @@ export default function App() {
             {page === "together" && (
               <>
                 <PageIntro
-                  eyebrow="BETTER TOGETHER"
-                  title="把小小的进步，分享给彼此。"
-                  text="一句鼓励，一次耐心倾听，一段一起坚持的日子。"
+                  eyebrow=""
+                  title={a.togetherTitle}
+                  text={a.togetherIntro}
                 />
                 <Together
                   garden={garden}
@@ -593,13 +577,18 @@ export default function App() {
                 />
               </>
             )}
-            {page === "library" && <LibraryPage practice={() => navigate("practice")} classroom={classroom} />}
+            {page === "library" && (
+              <LibraryPage
+                practice={() => navigate("practice")}
+                classroom={classroom}
+              />
+            )}
             {page === "settings" && (
               <>
                 <PageIntro
-                  eyebrow="MAKE IT FEEL LIKE YOU"
-                  title="你的花园，你来安排。"
-                  text="主题、布局、字号与动画，各自保存。没有哪一种风格是必须选的。"
+                  eyebrow=""
+                  title={a.settingsTitle}
+                  text={a.settingsIntro}
                 />
                 <Settings prefs={prefs} setPrefs={setPrefs} garden={garden} />
               </>
@@ -608,7 +597,7 @@ export default function App() {
         )}
         <footer className="page-footer">
           <Sprout size={15} />
-          <span>一起学英语 · 从小小的坚持开始</span>
+          <span>{a.footer}</span>
           <span className="footer-status">
             {garden.auth
               ? "私密空间 · " + garden.status
@@ -626,6 +615,7 @@ export default function App() {
           .map(([key, label, Icon]) => (
             <button
               className={page === key ? "active" : ""}
+              aria-label={label}
               aria-current={page === key ? "page" : undefined}
               key={key}
               onClick={() => {
