@@ -201,6 +201,36 @@
 .studio-saved {
   min-width: 0;
 }
+.shared-look-list {
+  display: grid;
+  gap: 12px;
+}
+.shared-look {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--paper);
+}
+.shared-look strong {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.shared-look .muted {
+  margin: 6px 0 10px;
+}
+.decoration-strip {
+  position: relative;
+  height: 72px;
+  margin: 14px 15px;
+  color: var(--accent);
+}
+.decoration-strip span {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+}
 .studio-saved .text-button {
   font-size: 0.72rem;
   padding: 0;
@@ -411,7 +441,9 @@ html[data-layout="focus"] .dashboard-grid {
   grid-template-columns: minmax(0, 1fr);
   max-width: 840px;
 }
-html[data-layout="focus"] .module-tasks { grid-row: auto; }
+html[data-layout="focus"] .module-tasks {
+  grid-row: auto;
+}
 .look-preview--small .look-preview__modules[data-layout="focus"] {
   grid-template-columns: 1fr;
   gap: 3px;

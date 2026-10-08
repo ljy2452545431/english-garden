@@ -1,4 +1,7 @@
 import { useRef, useState, type CSSProperties } from "react";
+import type { Garden } from "../hooks/useGarden";
+import { SharedLooks } from "./SharedLooks";
+import { CreativeCanvas } from "./CreativeCanvas";
 import { ArrowUp, ArrowDown, Check, Palette } from "./icons";
 import { zh as t } from "../i18n/zh";
 import { appearanceText as a } from "../i18n/appearance";
@@ -155,7 +158,9 @@ function LookPreview({
 export function AppearanceStudio({
   prefs,
   setPrefs,
+  garden,
 }: {
+  garden: Garden;
   prefs: Preferences;
   setPrefs: (next: Preferences) => void;
 }) {
@@ -200,7 +205,7 @@ export function AppearanceStudio({
           <h2>{a.preview}</h2>
           <Palette size={20} />
         </div>
-        <LookPreview prefs={prefs} />
+        <CreativeCanvas prefs={prefs} onChange={(next) => change(next)} />
         <p className="muted mt-3">{a.previewNote}</p>
         <div className="row flex-wrap">
           <button
@@ -231,6 +236,11 @@ export function AppearanceStudio({
         </p>
       </div>
       <div className="studio-controls">
+        <SharedLooks
+          garden={garden}
+          prefs={prefs}
+          onApply={(appearance) => change({ ...prefs, ...appearance })}
+        />
         <section className="studio-section">
           <h2>{a.preset}</h2>
           <div className="studio-presets">

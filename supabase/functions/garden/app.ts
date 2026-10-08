@@ -5,6 +5,19 @@ type Row=Record<string,any>;
 type Member={id:string;username:string;displayName:string};
 type Runtime={fetch?:typeof fetch;aiTimeoutMs?:number;logger?:(data:Record<string,unknown>)=>void};
 const hash=async(value:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))).map(x=>x.toString(16).padStart(2,'0')).join('');
+const appearanceChoices:Record<string,string[]>={theme:['garden','cream','rose','ocean','night'],density:['comfortable','compact'],font:['normal','large'],motion:['full','low','none'],card:['soft','outlined','flat'],texture:['plain','dots','grid'],corners:['rounded','square'],accent:['theme','ink','berry','blue','forest'],layout:['balanced','focus']};
+function validateAppearance(value:unknown):Row {
+  requireValue(object(value),400,'INVALID_LOOK','搭配外观格式无效');
+  const keys=[...Object.keys(appearanceChoices),'order','hidden','decorations'];
+  requireValue(Object.keys(value).every(key=>keys.includes(key))&&Object.entries(appearanceChoices).every(([key,allowed])=>typeof value[key]==='string'&&allowed.includes(value[key] as string)),400,'INVALID_LOOK','搭配包含不支持的外观设置');
+  const order=value.order,hidden=value.hidden;
+  requireValue(Array.isArray(order)&&order.length===4&&new Set(order).size===4&&order.every(key=>['tasks','timer','growth','note'].includes(key)),400,'INVALID_LOOK','卡片顺序格式无效');
+  requireValue(Array.isArray(hidden)&&hidden.length<=3&&new Set(hidden).size===hidden.length&&hidden.every(key=>['timer','growth','note'].includes(key)),400,'INVALID_LOOK','隐藏卡片设置无效');
+  const decorations=value.decorations??[];
+  requireValue(Array.isArray(decorations)&&decorations.length<=8&&new Set(decorations.map(item=>object(item)?item.id:null)).size===decorations.length&&decorations.every(item=>object(item)&&Object.keys(item).length===5&&Object.keys(item).every(key=>['id','kind','x','y','rotation'].includes(key))&&typeof item.id==='string'&&uuid.test(item.id)&&['leaf','sun','heart','book'].includes(item.kind as string)&&['x','y','rotation'].every(key=>typeof item[key]==='number'&&Number.isFinite(item[key]))&&Number(item.x)>=0&&Number(item.x)<=1&&Number(item.y)>=0&&Number(item.y)<=1&&Number(item.rotation)>=-30&&Number(item.rotation)<=30),400,'INVALID_LOOK','贴纸位置或样式无效');
+  return {...value,decorations};
+}
+const publicLook=(row:Row,displayName?:string)=>({id:row.id,name:row.name,appearance:row.appearance,userId:row.user_id,displayName:displayName??row.members?.display_name??'同学',createdAt:row.created_at});
 const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 
 /** 每个请求均向 Auth 验证身份；service_role 不会返回浏览器。 */
@@ -143,6 +156,26 @@ export function createHandler(config:Config,runtime:Runtime={}) {
       if(path==='/api/messages'&&request.method==='POST') {
         const input=await json(request);requireValue(typeof input.text==='string'&&input.text.trim()&&input.text.length<=1000,400,'INVALID_INPUT','留言需要1–1000字');await limit('messages:'+member.id,20);
         const rows=await rest('messages','POST',{user_id:member.id,body:input.text.trim()});const row=rows[0];return respond(201,{id:row.id,userId:member.id,displayName:member.displayName,text:row.body,createdAt:row.created_at});
+      }
+      if(path==='/api/looks'&&request.method==='GET') {
+        const rows=await rest('garden_looks?select=id,name,appearance,user_id,created_at,members(display_name)&order=created_at.desc,id.desc&limit=12');
+        return respond(200,{looks:rows.map((row:Row)=>publicLook(row))});
+      }
+      if(path==='/api/looks'&&request.method==='POST') {
+        const input=await json(request);
+        requireValue(Object.keys(input).length===2&&Object.keys(input).every(key=>['name','appearance'].includes(key))&&typeof input.name==='string'&&input.name.trim().length>=1&&input.name.trim().length<=24,400,'INVALID_LOOK','搭配名称需要1–24字');
+        const appearance=validateAppearance(input.appearance);await limit('looks:'+member.id,10);
+        const row=await rpc('garden_create_look',{p_user:member.id,p_name:input.name.trim(),p_appearance:appearance});
+        requireValue(row!==null,409,'LOOK_QUOTA','每人最多保存6套共享搭配，请先删除自己的旧搭配');
+        return respond(201,{look:publicLook(row,member.displayName)});
+      }
+      const lookId=path.match(/^\/api\/looks\/([^/]+)$/)?.[1];
+      if(lookId&&request.method==='DELETE') {
+        requireValue(uuid.test(lookId),400,'INVALID_LOOK','搭配编号无效');await limit('looks:'+member.id,10);
+        const rows=await rest(`garden_looks?id=eq.${lookId}&select=id,user_id`);
+        requireValue(rows.length===1,404,'LOOK_NOT_FOUND','搭配不存在或已经删除');
+        requireValue(rows[0].user_id===member.id,403,'FORBIDDEN','只能删除自己创建的搭配');
+        await rest(`garden_looks?id=eq.${lookId}&user_id=eq.${member.id}`,'DELETE');return respond(200,{deleted:true});
       }
       if(path==='/api/ai-feedback'&&request.method==='POST') return respond(200,await aiFeedback(member,await json(request)));
       if(path==='/api/recordings'&&request.method==='GET') {

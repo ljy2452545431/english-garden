@@ -31,7 +31,7 @@ export function Settings({
   }
   return (
     <>
-      <AppearanceStudio prefs={prefs} setPrefs={setPrefs} />
+      <AppearanceStudio prefs={prefs} setPrefs={setPrefs} garden={garden} />
       <div className="settings-records">
         <section className="paper">
           <h2>计划与学习记录</h2>

@@ -6,10 +6,10 @@ import {route} from '../functions/garden/helpers.ts';
 const aid='00000000-0000-4000-8000-000000000001',bid='00000000-0000-4000-8000-000000000002';
 const config={url:'https://example.supabase.co',serviceKey:'private-service-test',publicKey:'public-test',origins:['https://ljy2452545431.github.io']};
 function fixture(options={}) {
-  const states=new Map([[aid,{version:0,state:{}}],[bid,{version:0,state:{}}]]),recordings=new Map(),audio=new Map(),revoked=new Set(),leases=new Set();let messageId=0;const messages=[];const calls=[];let forceLimit=false;let conflict=false;let deleteFails=Boolean(options.deleteFails);
+  const states=new Map([[aid,{version:0,state:{}}],[bid,{version:0,state:{}}]]),recordings=new Map(),audio=new Map(),revoked=new Set(),leases=new Set();let messageId=0;const messages=[];const looks=new Map();const calls=[];let forceLimit=false;let conflict=false;let deleteFails=Boolean(options.deleteFails);
   const result=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json'}});
   const fakeFetch=async(url,init={})=>{
-    const parsed=new URL(url);const path=parsed.pathname;calls.push({path,init});const body=init.body&&typeof init.body==='string'?JSON.parse(init.body):{};const header=new Headers(init.headers);
+    const parsed=new URL(url);const path=parsed.pathname;calls.push({path,init,search:parsed.search});const body=init.body&&typeof init.body==='string'?JSON.parse(init.body):{};const header=new Headers(init.headers);
     const intercepted=await options.intercept?.({path,parsed,body,init});if(intercepted)return intercepted;
     if(parsed.hostname==='api.deepseek.com')return options.aiFetch?.(url,init)??result({choices:[{message:{content:'练习建议'}}]});
     if(path==='/auth/v1/token') return body.password==='wrong'?result({},400):result({access_token:body.email==='outsider@test.example'?'outsider':body.email==='bob@test.example'?'b':'a',user:{id:body.email==='outsider@test.example'?'outsider':body.email==='bob@test.example'?bid:aid,email:body.email}});
@@ -30,6 +30,16 @@ function fixture(options={}) {
     if(path==='/rest/v1/states') {const state=states.get(parsed.searchParams.get('user_id')?.slice(3));return result([{version:state.version,body:state.state}]);}
     if(path==='/rest/v1/messages') {
       if(init.method==='POST'){const m={id:++messageId,...body,created_at:'2026-10-08T00:00:00Z',members:{display_name:body.user_id===aid?'小花':'小树'}};messages.push(m);return result([m]);}return result([...messages].reverse());
+    }
+    if(path==='/rest/v1/rpc/garden_create_look') {
+      if([...looks.values()].filter(row=>row.user_id===body.p_user).length>=6)return result(null);
+      const row={id:crypto.randomUUID(),user_id:body.p_user,name:body.p_name,appearance:body.p_appearance,created_at:'2026-10-08T00:00:00Z',members:{display_name:body.p_user===aid?'小花':'小树'}};looks.set(row.id,row);return result(row);
+    }
+    if(path==='/rest/v1/garden_looks') {
+      const id=parsed.searchParams.get('id')?.slice(3);const owner=parsed.searchParams.get('user_id')?.slice(3);
+      const rows=(id?[looks.get(id)].filter(Boolean):[...looks.values()]).filter(row=>!owner||row.user_id===owner);
+      if(init.method==='DELETE'){rows.forEach(row=>looks.delete(row.id));return result(rows);}
+      return result(rows);
     }
     if(path==='/rest/v1/rpc/garden_reserve_recording') {recordings.set(body.p_id,{id:body.p_id,user_id:body.p_user,title:body.p_title,mime:body.p_mime,size:body.p_size,shared:body.p_shared,created_at:'2026-10-08T00:00:00Z'});return result(true);}
     if(path==='/rest/v1/recordings') {
@@ -190,4 +200,41 @@ test('Storage清理失败保留可恢复记录计入配额，恢复后本人可�
   const recording=(await f.call('/api/recordings',undefined,'a')).data.recordings[0];assert.equal(recording.shared,false);
   f.setDeleteFailure(false);assert.equal((await f.call('/api/recordings/'+recording.id,{},'a','DELETE')).status,200);
   assert.equal(f.audio.size,0);assert.equal(f.recordings.size,0);
+});
+
+const lookAppearance={theme:'garden',density:'comfortable',font:'normal',motion:'low',order:['tasks','timer','growth','note'],hidden:[],card:'soft',texture:'plain',corners:'rounded',accent:'theme',layout:'balanced',decorations:[]};
+test('共享外观独立存储、双人可读、仅作者可删，读取有界',async()=>{
+  const f=fixture();const saved=await f.call('/api/looks',{name:'  森林书桌  ',appearance:lookAppearance},'a');
+  assert.equal(saved.status,201);const look=saved.data.look;
+  assert.equal(look.name,'森林书桌');assert.equal(look.userId,aid);assert.equal(look.displayName,'小花');assert.match(look.id,/^[a-f0-9-]{36}$/);assert.deepEqual(look.appearance,lookAppearance);
+  assert.deepEqual((await f.call('/api/looks',undefined,'b')).data.looks,[look]);
+  const read=f.calls.find(c=>c.path==='/rest/v1/garden_looks');assert.equal(new URLSearchParams(read.search).get('limit'),'12');
+  assert.ok(f.calls.every(c=>c.path!=='/rest/v1/states'&&c.path!=='/rest/v1/messages'));
+  assert.equal((await f.call('/api/looks/'+look.id,undefined,'b','DELETE')).status,403);
+  assert.equal((await f.call('/api/looks/'+look.id,undefined,'a','DELETE')).data.deleted,true);
+  assert.deepEqual((await f.call('/api/looks',undefined,'b')).data.looks,[]);
+  assert.equal((await f.call('/api/looks/'+look.id,undefined,'a','DELETE')).status,404);
+});
+test('共享外观鉴权、撤销、限流、原子配额及严格输入契约',async()=>{
+  const f=fixture();assert.equal((await f.call('/api/looks')).status,401);assert.equal((await f.call('/api/looks',undefined,'outsider')).status,403);
+  for(const bad of [{name:' ',appearance:lookAppearance},{name:'x'.repeat(25),appearance:lookAppearance},{name:'a',appearance:{...lookAppearance,looks:[]}},{name:'a',appearance:{...lookAppearance,theme:'evil'}},{name:'a',appearance:{...lookAppearance,order:['tasks','tasks','growth','note']}},{name:'a',appearance:{...lookAppearance,hidden:['tasks']}},{name:'a',appearance:{...lookAppearance,hidden:['note','note']}},{name:'a',appearance:[]},{name:'a',appearance:{theme:'garden'}},{name:'a',appearance:lookAppearance,userId:bid}]) {
+    assert.equal((await f.call('/api/looks',bad,'a')).status,400);
+  }
+  assert.equal((await f.call('/api/looks/not-a-uuid',undefined,'a','DELETE')).status,400);
+  for(let i=0;i<6;i++)assert.equal((await f.call('/api/looks',{name:'搭配'+i,appearance:lookAppearance},'a')).status,201);
+  assert.equal((await f.call('/api/looks',{name:'第七套',appearance:lookAppearance},'a')).error.code,'LOOK_QUOTA');
+  assert.equal((await f.call('/api/looks',{name:'同伴搭配',appearance:lookAppearance},'b')).status,201);
+  f.setLimit(true);assert.equal((await f.call('/api/looks',undefined,'a')).status,429);f.setLimit(false);
+  await f.call('/api/logout',{},'a');assert.equal((await f.call('/api/looks',undefined,'a')).status,401);
+});
+
+test('共享搭配贴纸仅接受固定形状及有限坐标，兼容无贴纸请求',async()=>{
+ const f=fixture();const sticker={id:crypto.randomUUID(),kind:'leaf',x:0.5,y:0.2,rotation:-15};
+ const created=await f.call('/api/looks',{name:'叶子',appearance:{...lookAppearance,decorations:[sticker]}},'a');
+ assert.equal(created.status,201);assert.deepEqual(created.data.look.appearance.decorations,[sticker]);
+ const {decorations,...legacy}=lookAppearance;
+ assert.deepEqual((await f.call('/api/looks',{name:'无贴纸',appearance:legacy},'a')).data.look.appearance.decorations,[]);
+ for(const decorations of [[{...sticker,kind:'<svg>'}],[{...sticker,x:-0.01}],[{...sticker,y:1.01}],[{...sticker,rotation:31}],[{...sticker,x:'0.5'}],[{...sticker,url:'https://evil.example'}],[{...sticker,id:'bad'}],[sticker,sticker],Array.from({length:9},()=>({...sticker,id:crypto.randomUUID()}))]) {
+  assert.equal((await f.call('/api/looks',{name:'非法',appearance:{...lookAppearance,decorations}},'a')).status,400);
+ }
 });

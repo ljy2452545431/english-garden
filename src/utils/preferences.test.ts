@@ -7,6 +7,37 @@ import {
 } from "./preferences";
 
 describe("外观偏好", () => {
+  it("装饰只接受有限坐标和合法类型，收藏能保留装饰", () => {
+    const valid = {
+      id: crypto.randomUUID(),
+      kind: "heart",
+      x: 0.25,
+      y: 0.4,
+      rotation: 12,
+    };
+    const result = normalizePreferences({
+      decorations: [
+        valid,
+        { ...valid, id: crypto.randomUUID(), kind: "script" },
+        { ...valid, id: crypto.randomUUID(), x: 2 },
+        { ...valid, id: crypto.randomUUID(), y: NaN },
+        { ...valid, id: crypto.randomUUID(), rotation: 40 },
+        null,
+      ],
+    });
+    expect(result.decorations).toEqual([valid]);
+    expect(saveLook(result, "贴纸").looks[0].appearance.decorations).toEqual([
+      valid,
+    ]);
+    expect(
+      normalizePreferences({
+        decorations: Array.from({ length: 10 }, () => ({
+          ...valid,
+          id: crypto.randomUUID(),
+        })),
+      }).decorations,
+    ).toHaveLength(8);
+  });
   it("升级旧设置并保留原有配色和顺序", () => {
     const result = normalizePreferences({
       theme: "rose",

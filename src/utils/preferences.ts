@@ -11,6 +11,14 @@ export type Appearance = {
   accent: string;
   layout: string;
   hidden: string[];
+  decorations: Decoration[];
+};
+export type Decoration = {
+  id: string;
+  kind: "leaf" | "sun" | "heart" | "book";
+  x: number;
+  y: number;
+  rotation: number;
 };
 export type SavedLook = { id: string; name: string; appearance: Appearance };
 export type Preferences = Appearance & { looks: SavedLook[] };
@@ -27,6 +35,7 @@ export const defaults: Preferences = {
   accent: "theme",
   layout: "balanced",
   looks: [],
+  decorations: [],
 };
 const choices: Record<string, string[]> = {
   theme: ["garden", "cream", "rose", "ocean", "night"],
@@ -55,6 +64,34 @@ function appearance(value: unknown): Appearance {
   const order = source.order;
   return {
     ...result,
+    decorations: Array.isArray(source.decorations)
+      ? source.decorations
+          .filter(
+            (item, index, items) =>
+              item &&
+              typeof item.id === "string" &&
+              /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+                item.id,
+              ) &&
+              items.findIndex((other) => other?.id === item.id) === index &&
+              ["leaf", "sun", "heart", "book"].includes(item.kind) &&
+              [item.x, item.y, item.rotation].every(Number.isFinite) &&
+              item.x >= 0 &&
+              item.x <= 1 &&
+              item.y >= 0 &&
+              item.y <= 1 &&
+              item.rotation >= -30 &&
+              item.rotation <= 30,
+          )
+          .slice(0, 8)
+          .map((item) => ({
+            id: item.id.slice(0, 100),
+            kind: item.kind,
+            x: item.x,
+            y: item.y,
+            rotation: item.rotation,
+          }))
+      : [],
     order:
       Array.isArray(order) &&
       order.length === 4 &&

@@ -32,6 +32,7 @@ import { dateKey, getCurrentDay, getStreak } from "./utils/learning";
 import { configured } from "./server";
 import { GardenCompanion } from "./components/GardenCompanion";
 import { useGardenMotion } from "./hooks/useGardenMotion";
+import { DecorationStrip } from "./components/DecorationStrip";
 import { GardenScene } from "./components/GardenScene";
 import { Timer } from "./components/Timer";
 import { Classroom, type Skill } from "./components/Classroom";
@@ -460,6 +461,7 @@ export default function App() {
                       <span className="eyebrow">DAILY PRACTICE</span>
                       <span className="hero-chip">第 {week} 周</span>
                     </div>
+                    <DecorationStrip items={prefs.decorations} />
                     <h1>{a.todayTitle}</h1>
                     <p>{a.todayDescription}</p>
                     <button
