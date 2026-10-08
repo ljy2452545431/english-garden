@@ -8,9 +8,10 @@ import { PageIntro } from "./PageIntro";
 import { Quiz } from "./Quiz";
 import { WordGame } from "./WordGame";
 import { Leaf } from "./icons";
+import { OfficialPractice } from "./OfficialPractice";
 const lessons = curriculum as WeeklyLesson[];
 export function Practice({ garden, week }: { garden: Garden; week: number }) {
-  const [mode, setMode] = useState<"weekly" | "wrong">("weekly");
+  const [mode, setMode] = useState<"official" | "weekly" | "wrong">("official");
   const lesson = lessons[week - 1];
   const selected = lessons
     .flatMap((l) => [
@@ -35,16 +36,16 @@ export function Practice({ garden, week }: { garden: Garden; week: number }) {
     <>
       <PageIntro
         eyebrow="PRACTICE MAKES PROGRESS"
-        title="知道哪里不会，就是进步的开始。"
-        text={t.examNote}
+        title={t.practiceTitle}
+        text={t.practiceIntro}
       />
-      <WordGame words={lesson.vocabulary} />
-      <div className="row mb-5 mt-5">
+      <div className="row flex-wrap mb-5 mt-5">
+        <button className={"pill " + (mode === "official" ? "active" : "")} onClick={() => setMode("official")}>{t.officialPractice}</button>
         <button
           className={"pill " + (mode === "weekly" ? "active" : "")}
           onClick={() => setMode("weekly")}
         >
-          {t.exam} · 第 {week} 周
+          {t.foundationPractice} · 第 {week} 周
         </button>
         <button
           className={"pill " + (mode === "wrong" ? "active" : "")}
@@ -53,7 +54,10 @@ export function Practice({ garden, week }: { garden: Garden; week: number }) {
           {t.wrong}（{selected.length}）
         </button>
       </div>
-      <section className="paper">
+      {mode === "official" ? <OfficialPractice garden={garden} /> : <>
+      <p className="muted">{t.examNote}</p>
+      <WordGame words={lesson.vocabulary} />
+      <section className="paper mt-5">
         {mode === "weekly" && (
           <>
             <h2>本周信息阅读材料</h2>
@@ -101,6 +105,7 @@ export function Practice({ garden, week }: { garden: Garden; week: number }) {
           </div>
         )}
       </section>
+      </>}
     </>
   );
 }

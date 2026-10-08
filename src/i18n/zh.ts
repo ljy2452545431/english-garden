@@ -16,7 +16,7 @@ export const zh = {
   task1:'小作文提示',task2:'大作文提示',draft:'我的草稿',draftPlaceholder:'先独立写，再获取反馈。你的作品会自动保存。',transcript:'我的口语转写',wordsCount:'词',
   noPartner:'连接私密服务后，在这里看到真实的搭档进度与留言。',message:'给搭档留句话',send:'发送',messagePlaceholder:'今天哪一件小事值得一起开心？',noMessages:'还没有留言。写下第一句鼓励吧。',
   note:'今日笔记',notePlaceholder:'记下一个表达、一处问题，或今天的小进步。',wrong:'错题再练',noWrong:'这里还没有错题。完成一份练习后，再来复盘。',
-  exam:'阶段综合测验',examNote:'原创课程综合检测，自动判客观题；正确率不换算为雅思分数。完整正式模考另需连续时段与合法试卷。',resourceNote:'站内原创课程可以直接学习。第三方官方样题与付费题册保留授权边界；无法合法内嵌的资源会打开官方入口。',
+  officialLibraryNote:'已整理官方完整听力、学术阅读、学术写作样卷，以及口语三部分音频和题型资料。练习页提供来源、官方答案、计时与复盘；完整机考题目可选择在本站加载官方页面作答。',officialPractice:'官方全真练习',foundationPractice:'基础周练',practiceTitle:'用官方样卷，练出进步。',practiceIntro:'官方完整单科样卷、题型样题与基础周练，一起安排。先按学术类 Academic 备考；整卷模拟需要额外连续时间。',exam:'阶段综合测验',examNote:'原创课程综合检测，自动判客观题；正确率不换算为雅思分数。完整正式模考另需连续时段与合法试卷。',resourceNote:'站内原创课程可以直接学习。第三方官方样题与付费题册保留授权边界；无法合法内嵌的资源会打开官方入口。',
   moveUp:'上移',moveDown:'下移',reset:'恢复默认',close:'关闭',done:'完成',back:'返回',save:'保存',error:'操作未完成，请稍后重试',empty:'暂无记录',delete:'删除',share:'分享给搭档',
   focus:'把这一刻留给英语',begin:'开始',pause:'暂停',timerDone:'这一段专注完成了，伸个懒腰吧。',
   milestones:'共同的小里程碑',milestone1:'第一颗种子',milestone7:'一周的坚持',milestone28:'一个月的变化',milestone84:'基础长出新芽',

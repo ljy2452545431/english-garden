@@ -593,7 +593,7 @@ export default function App() {
                 />
               </>
             )}
-            {page === "library" && <LibraryPage classroom={classroom} />}
+            {page === "library" && <LibraryPage practice={() => navigate("practice")} classroom={classroom} />}
             {page === "settings" && (
               <>
                 <PageIntro

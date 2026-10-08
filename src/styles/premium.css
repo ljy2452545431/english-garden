@@ -76,7 +76,7 @@ html, .hero, .welcome-gate, .paper, .timer-card, .sidebar, .bottom-nav, .week-ca
 .growth-stats span { font-size: .72rem; }
 .progress-track { height: 5px; }
 .page-intro { margin: 35px 0 28px; }
-.page-intro h1 { font-size: clamp(1.9rem, 3vw, 2.6rem); font-weight: 700; letter-spacing: -.055em; }
+.page-intro h1 { text-wrap: balance; font-size: clamp(1.9rem, 3vw, 2.6rem); font-weight: 700; letter-spacing: -.055em; }
 .page-intro p { font-size: .91rem; max-width: 680px; }
 .skill-tabs { gap: 7px; padding: 7px; border-radius: 19px; background: var(--soft); margin-bottom: 7px; }
 .skill-tabs button { color: var(--muted); border: 0; background: transparent; padding: 12px 17px; border-radius: 13px; }

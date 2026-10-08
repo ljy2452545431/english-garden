@@ -5,8 +5,10 @@ import { Leaf, Headphones, PenLine, ArrowUpRight, BookOpen } from "./icons";
 import type { Skill } from "./Classroom";
 export function LibraryPage({
   classroom,
+  practice,
 }: {
   classroom: (skill: Skill) => void;
+  practice: () => void;
 }) {
   return (
     <>
@@ -80,17 +82,9 @@ export function LibraryPage({
         </a>
       </section>
       <section className="paper mt-5">
-        <h2>完整试卷与评分</h2>
-        <p>
-          本站原创练习提供客观题批改、答案证据和错题复习。官方完整样题从上方官方入口获取；剑桥题册需要正版授权，本站不会公开复制付费试卷。
-        </p>
-        <p>
-          正式听读写模拟应连续进行约 150 分钟，另安排口语。AI
-          写作和口语反馈只作训练参考，不能替代真实考试成绩。
-        </p>
-        <p className="muted">
-          要做到所有真题都直接在站内使用，需要相应的素材授权与可内嵌条件；目前完整授权试卷尚未导入。
-        </p>
+        <h2>{t.officialPractice}</h2>
+        <p>{t.officialLibraryNote}</p>
+        <button className="button primary" onClick={practice}>{t.officialPractice}<ArrowUpRight size={18}/></button>
       </section>
     </>
   );
