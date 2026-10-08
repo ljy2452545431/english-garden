@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+server/data/
+*.sqlite*
+*.log
+.browser-qa/
+
+.playwright-cli/
+*.tsbuildinfo
+supabase/.temp/

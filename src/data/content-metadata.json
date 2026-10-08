@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "language": "zh-CN",
+  "weeklyLessonCount": 48,
+  "dailyPlanCount": 336,
+  "contentOrigin": "本站 48 份原创微课程，每周一份阅读、一份对话/讲解、词卡、语法和写说提示，可多日复盘。不是 336 套独立试卷，也不是完整雅思真题。",
+  "audioNotice": "站内语音合成仅朗读原创脚本，用于初级听辨和跟读。声音、语速、时长和题量不等同真实考试音频；首次听时应隐藏脚本。",
+  "scoreNotice": "客观题仅统计本次练习正确率，不换算 IELTS 分数。本站题型和题量不足以进行官方原始分换算。AI/搭档写说评语是建议，不是正式评分。",
+  "planMapping": "每日通过 week 关联本站微课程；原 Word 计划的 R1/R2/L1/L2 可先用本周原创材料做首练、复述或复盘。站内只有每周一阅读一听力，不把同一材料重做算作新的能力测量。",
+  "examMaterialBoundary": "原计划 X/Y/Z 及完整模拟任务保留原文，仍需合法购买的题册或官方允许的样题。本站没有复制付费 Cambridge 题册，不声称现有微练习等同完整模考。",
+  "readingNotice": "基础周使用短文；后期是 IELTS-style 微练习，题量、篇幅和难度并非完整考试。匹配与填空使用备选项，正式填空还要检查自主拼写及字数限制。",
+  "grammarNotice": "前 24 周建立基础与复合句；后 24 周复盘题型语言、证据范围、结构及评估边界，不以重复同一规则代替新题测量。",
+  "resourceLinkNotice": "主要学习练习可在站内完成；官方资源、正版整套材料与人工反馈仍可能需要外部入口。全真测量和真实成绩不由本站微练习替代。",
+  "dailyRoutine": {
+    "vocabularyMinutes": 10,
+    "mainTaskMinutes": 30,
+    "speakingMinutes": 15,
+    "reflectionMinutes": 5
+  }
+}

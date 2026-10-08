@@ -1,0 +1,44 @@
+[
+  {
+    "title": "IELTS 官方样题",
+    "category": "考试样题",
+    "description": "查看官方提供的听说读写示例及说明；站内原创题不能替代完整官方材料。",
+    "url": "https://ielts.org/take-a-test/preparation-resources/sample-test-questions",
+    "licenseNote": "官方站点外链；未在本站复制试卷或音频。使用遵循来源条款。"
+  },
+  {
+    "title": "IELTS 官方评分说明",
+    "category": "评分标准",
+    "description": "核对听读计分、写说评分标准与总分规则。本站正确率、互评和 AI 建议不是官方成绩。",
+    "url": "https://ielts.org/take-a-test/your-results/ielts-scoring-in-detail",
+    "licenseNote": "官方站点外链；评分描述版权归权利人。"
+  },
+  {
+    "title": "British Council LearnEnglish",
+    "category": "分级学习",
+    "description": "官方分级听读、语法和词汇学习资源。需要更多不同文本时从 A1/A2 开始。",
+    "url": "https://learnenglish.britishcouncil.org/",
+    "licenseNote": "官方站点外链；没有复制其文章、题目或录音。"
+  },
+  {
+    "title": "British Council IELTS Ready",
+    "category": "考试备考",
+    "description": "官方备考服务入口；部分资源可能要求注册或满足地区与报名条件。",
+    "url": "https://takeielts.britishcouncil.org/take-ielts/prepare/ielts-ready",
+    "licenseNote": "外部官方服务；以当前服务条款、授权和可访问情况为准。"
+  },
+  {
+    "title": "IDP 雅思准备",
+    "category": "考试备考",
+    "description": "另一官方考试合作方提供的准备入口，补充考试形式和备考信息。",
+    "url": "https://ielts.idp.com/prepare",
+    "licenseNote": "外链；不在本站托管其受版权保护试卷。"
+  },
+  {
+    "title": "Cambridge Dictionary",
+    "category": "词典",
+    "description": "核查学习词汇的发音、词性和含义；站内词卡是原创学习释义。",
+    "url": "https://dictionary.cambridge.org/",
+    "licenseNote": "官方词典外链；未复制词典例句、音标或发音音频。"
+  }
+]

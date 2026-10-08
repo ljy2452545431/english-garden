@@ -1,0 +1,91 @@
+name: 检查并发布英语花园
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: english-garden-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: read
+    env:
+      VITE_API_URL: ${{ vars.VITE_API_URL }}
+      VITE_API_PUBLIC_KEY: ${{ vars.VITE_API_PUBLIC_KEY }}
+    steps:
+      - name: 读取独立学习网站仓库
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: 安装 pnpm 10
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+      - name: 安装 Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: 使用锁文件安装依赖
+        run: pnpm install --frozen-lockfile
+      - name: 检查前端课程与学习逻辑
+        run: pnpm test:coverage
+      - name: 检查真实 SQLite 后端契约
+        run: node --test --experimental-test-coverage server/tests/api.test.mjs
+      - name: 检查 Supabase HTTP 适配契约
+        run: node --experimental-strip-types --test --experimental-test-coverage supabase/tests/adapter.test.mjs
+      - name: 检查 Supabase 源码类型
+        run: pnpm exec tsc --noEmit --allowImportingTsExtensions --module esnext --moduleResolution bundler --target es2022 --lib es2023,dom --skipLibCheck supabase/functions/garden/index.ts
+      - name: 检查发布用公开配置
+        if: github.event_name != 'pull_request'
+        run: |
+          node --input-type=module <<'NODE'
+          const url = process.env.VITE_API_URL;
+          const key = process.env.VITE_API_PUBLIC_KEY;
+          if (!url || !key) throw new Error('请先配置 Repository variables: VITE_API_URL / VITE_API_PUBLIC_KEY');
+          if (new URL(url).protocol !== 'https:') throw new Error('发布 API 必须为 HTTPS');
+          if (!key.startsWith('sb_publishable_')) {
+            let role;
+            try { role = JSON.parse(Buffer.from(key.split('.')[1] ?? '', 'base64url').toString()).role; } catch {}
+            if (role !== 'anon') throw new Error('前端只允许 publishable 或 legacy anon 公钥，禁止 secret / service_role');
+          }
+          NODE
+      - name: 构建移动与桌面网站
+        run: pnpm build
+      - name: 准备 GitHub Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v5
+      - name: 上传学习网站静态产物
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 发布独立项目 Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,6 @@
+.env
+.env.*
+data
+*.sqlite*
+tests
+README.md
