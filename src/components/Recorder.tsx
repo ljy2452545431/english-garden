@@ -1,5 +1,5 @@
 import { useEffect,useRef,useState } from 'react';
-import { Mic,Square,Download,CloudUpload } from 'lucide-react';
+import { Mic,Square,Download,CloudUpload } from './icons';
 import { zh as t } from '../i18n/zh';
 import { uploadRecording } from '../server';
 export function Recorder({token,title}:{token?:string;title:string}){

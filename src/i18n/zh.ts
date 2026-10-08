@@ -1,5 +1,6 @@
 /** 界面文案集中管理；课程中的英语属于学习材料。 */
 export const zh = {
+  waterGarden:'给花园浇水',waterEncouragement:'小小的照顾，也算一种坚持。',gardenEncouragement:'点一下，给今天一点鼓励。',
   app:'一起学英语',brand:'English Garden',tagline:'两个人，一天一小时。',today:'今日学习',plan:'成长计划',classroom:'学习课堂',practice:'练习与测验',together:'两人空间',library:'资料书架',settings:'我的花园',
   welcome:'慢慢来，也能走很远。',intro:'在这里，把每一天的小进步，种成一座属于你们的英语花园。',start:'开始今天的学习',continue:'继续学习',minutes:'分钟',week:'周',day:'天',completed:'已完成',checkin:'完成今日学习',undo:'撤销今日打卡',
   vocab:'词汇温室',reading:'阅读',listening:'听力',grammar:'语法',writing:'写作',speaking:'口语',timer:'专注计时',review:'复习',score:'练习结果',submit:'提交答案',retry:'重新练习',explain:'答案解析',select:'选择',

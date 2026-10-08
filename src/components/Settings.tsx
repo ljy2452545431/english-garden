@@ -1,11 +1,11 @@
 import { useRef,useState } from 'react';
-import { ArrowUp,ArrowDown,Download,Upload,Check,Palette } from 'lucide-react';
+import { ArrowUp,ArrowDown,Download,Upload,Check,Palette } from './icons';
 import { zh as t } from '../i18n/zh';
 import type { Garden } from '../hooks/useGarden';
 import { validateImport,type LearningState } from '../utils/learning';
 export type Preferences={theme:string;density:string;font:string;motion:string;order:string[]};
 export const defaults:Preferences={theme:'garden',density:'comfortable',font:'normal',motion:'full',order:['tasks','timer','growth','note']};
-const themes=[['garden',t.garden,'#53795e','#eff4ec'],['cream',t.cream,'#b9854c','#fbf4e9'],['rose',t.rose,'#b8667d','#fff1f3'],['ocean',t.ocean,'#43868f','#eaf5f8'],['night',t.night,'#a8c69d','#17252c']];
+const themes=[['garden',t.garden,'#32664c','#e4eee8'],['cream',t.cream,'#896039','#f7f5f1'],['rose',t.rose,'#974764','#faf5f7'],['ocean',t.ocean,'#2c6578','#f3f7f9'],['night',t.night,'#a9c69a','#151e24']];
 export function Settings({prefs,setPrefs,garden}:{prefs:Preferences;setPrefs:(value:Preferences)=>void;garden:Garden}){
  const file=useRef<HTMLInputElement>(null),[message,setMessage]=useState(''),[pending,setPending]=useState<LearningState|null>(null);
  const names:Record<string,string>={tasks:t.checklist,timer:t.timer,growth:t.progress,note:t.note};

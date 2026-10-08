@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, RotateCcw } from 'lucide-react';
+import { Check, RotateCcw } from './icons';
 import type { Question } from '../data/types';
 import { gradeAnswers } from '../utils/learning';
 import { zh as t } from '../i18n/zh';

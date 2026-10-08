@@ -77,3 +77,7 @@ node --experimental-strip-types --test --experimental-test-coverage supabase/tes
 前端覆盖率门槛目前只统计 `src/utils` 学习逻辑，**不是全应用 80% 覆盖率**；组件交互和真实手机浏览器需要另行验收。Supabase adapter 的本地测试模拟上游 HTTP，不能替代真实 SQL、RLS 和 Storage 证据。已有真实双账号回归范围与容量待验证事项见 [验收记录](docs/validation.md)。
 
 目前未配置 AI 时没有真实 AI 成功调用证据；语音合成不是全真听力，原创练习不能证明正式雅思分数；未完成目标负载容量验收，不宣称性能达标。
+
+## 视觉与动效更新
+
+界面使用 iconfont 的 Ant Design 官方图标集9402，素材本地渲染并保留MIT许可，详情见 [图标来源](docs/icon-sources.md)。五主题采用统一文字层级和圆角；手机导航使用网页磨砂材质，支持低透明度/高对比度偏好。GSAP 提供页面入场、卡片显现、按钮按压、桌面插画跟随、打卡反馈与本机浇水互动。浇水不修改真实学习进度。动态效果有完整、轻量、关闭三档，并尊重系统减少动态效果。

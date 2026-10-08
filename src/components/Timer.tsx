@@ -1,5 +1,5 @@
 import { useEffect,useRef,useState } from 'react';
-import { Pause,Play,RotateCcw } from 'lucide-react';
+import { Pause,Play,RotateCcw } from './icons';
 import { zh as t } from '../i18n/zh';
 export function Timer(){
  const [duration,setDuration]=useState(10),[seconds,setSeconds]=useState(600),[running,setRunning]=useState(false);

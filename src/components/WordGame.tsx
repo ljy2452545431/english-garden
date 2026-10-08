@@ -1,5 +1,5 @@
 import { useMemo,useState } from 'react';
-import { Sparkles,RotateCcw } from 'lucide-react';
+import { Sparkles,RotateCcw } from './icons';
 import type { WeeklyLesson } from '../data/types';
 export function WordGame({words}:{words:WeeklyLesson['vocabulary']}){
  const [round,setRound]=useState(0),[selected,setSelected]=useState<string|null>(null),[matched,setMatched]=useState<string[]>([]),[message,setMessage]=useState(''),[tries,setTries]=useState(0);

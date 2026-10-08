@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Volume2,Square,Leaf,BookOpen,Headphones,PenLine,Mic,Languages } from 'lucide-react';
+import { Volume2,Square,Leaf,BookOpen,Headphones,PenLine,Mic,Languages } from './icons';
 import { zh as t } from '../i18n/zh';
 import type { WeeklyLesson } from '../data/types';
 import type { Garden } from '../hooks/useGarden';

@@ -1,0 +1,312 @@
+.page-intro {
+  margin: 35px 0 27px;
+}
+.page-intro h1 {
+  font-size: 1.85rem;
+  font-weight: 550;
+  margin: 13px 0;
+}
+.page-intro p {
+  font-size: 0.86rem;
+  color: var(--muted);
+  max-width: 700px;
+}
+.phases {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.phases span {
+  font-size: 0.75rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 16px 10px;
+  border-radius: 10px;
+  text-align: center;
+}
+.phases span.active {
+  background: var(--soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.week-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  padding: 19px;
+}
+.week-card h3 {
+  margin: 19px 0 8px;
+}
+.week-card p {
+  font-size: 0.73rem;
+  color: var(--muted);
+  min-height: 40px;
+}
+.week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin: 12px 0;
+}
+.week-days button {
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  background: none;
+  border-radius: 7px;
+  font-size: 0.68rem;
+  padding: 0;
+}
+.week-days button.done {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+.week-days button.current {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.lesson-week-picker {
+  display: flex;
+  gap: 17px;
+  align-items: center;
+  margin-bottom: 22px;
+  font-size: 0.86rem;
+}
+.lesson-week-picker select {
+  max-width: 400px;
+}
+.skill-tabs {
+  display: flex;
+  gap: 6px;
+  overflow: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+.skill-tabs button {
+  border: 0;
+  background: var(--paper);
+  min-height: 48px;
+  border-radius: 11px;
+  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.83rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.skill-tabs button.active {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.classroom-paper > h2 {
+  font-size: 1.55rem;
+  margin: 22px 0 12px;
+}
+.reading-text {
+  background: var(--reading);
+  border: 1px solid var(--line);
+  padding: 24px;
+  border-radius: 13px;
+  margin-bottom: 25px;
+  white-space: pre-line;
+}
+.reading-text p:last-child {
+  margin-bottom: 0;
+}
+.flashcard {
+  width: 100%;
+  border: 1px solid var(--line);
+  min-height: 260px;
+  border-radius: 18px;
+  background: var(--hero);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 26px;
+  position: relative;
+  margin: 20px 0;
+}
+.flashcard strong {
+  font: 2.6rem Georgia;
+  margin: 22px 0 17px;
+}
+.flashcard.flipped strong {
+  font: 2rem system-ui;
+}
+.card-kicker {
+  font-size: 0.73rem;
+  color: var(--muted);
+}
+.flash-decoration {
+  position: absolute;
+  right: 25px;
+  top: 25px;
+  font-size: 2rem;
+  color: var(--accent);
+}
+.flashcard .english {
+  font-size: 1rem;
+  max-width: 90%;
+}
+.empty-state {
+  text-align: center;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 40px;
+}
+.empty-state p {
+  max-width: 500px;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+.empty-heart {
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+  background: var(--warm-soft);
+  display: grid;
+  place-items: center;
+  color: var(--terracotta);
+}
+.quiz {
+  margin-top: 18px;
+}
+.question {
+  border: 1px solid var(--line);
+  padding: 17px;
+  border-radius: 12px;
+  margin: 0 0 10px;
+}
+.question legend {
+  font-size: 0.95rem;
+  font-weight: 550;
+  max-width: 100%;
+  line-height: 1.65;
+  padding: 0 7px;
+}
+.answers {
+  display: grid;
+  gap: 8px;
+}
+.answer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 11px;
+  min-height: 48px;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+.answer.selected {
+  border-color: var(--accent);
+  background: var(--soft);
+}
+.answer input {
+  width: 16px;
+  height: 16px;
+  min-height: 16px;
+  padding: 0;
+  accent-color: var(--accent);
+}
+.letter {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.question.correct {
+  border-color: var(--accent);
+}
+.question.incorrect {
+  border-color: var(--terracotta);
+}
+.explanation {
+  background: var(--reading);
+  font-size: 0.82rem;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 14px 0 0;
+}
+.score-result {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--soft);
+  padding: 20px;
+  border-radius: 12px;
+}
+.score-result > span {
+  font: 2.6rem Georgia;
+  color: var(--accent);
+}
+.score-result small {
+  font-size: 1.1rem;
+}
+.score-result p {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 5px 0 0;
+}
+.instruction {
+  line-height: 1.9;
+}
+.example-list {
+  background: var(--soft);
+  padding: 15px 23px;
+  border-radius: 12px;
+}
+.example-list p {
+  margin-bottom: 8px;
+}
+.prompt-box {
+  padding: 19px;
+  background: var(--soft);
+  border-radius: 12px;
+  white-space: pre-line;
+}
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85rem;
+  margin-bottom: 9px;
+}
+.field-label span {
+  font-size: 0.73rem;
+  color: var(--muted);
+}
+.draft {
+  min-height: 300px;
+  font-size: 1.04rem;
+}
+.feedback {
+  border-top: 1px solid var(--line);
+  padding-top: 25px;
+  margin-top: 25px;
+}
+.speaking-questions h3 {
+  margin-top: 20px;
+  color: var(--accent);
+}
+.recording-indicator {
+  color: var(--terracotta);
+  font-size: 0.8rem;
+  margin-left: 12px;
+}

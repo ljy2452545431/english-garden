@@ -1,5 +1,5 @@
 import { useEffect,useState } from 'react';
-import { Heart,Send,RefreshCw,Lock,Trash2,Headphones } from 'lucide-react';
+import { Heart,Send,RefreshCw,Lock,Trash2,Headphones } from './icons';
 import { zh as t } from '../i18n/zh';
 import { request,recordingUrl } from '../server';
 import type { Garden } from '../hooks/useGarden';
