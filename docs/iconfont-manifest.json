@@ -146,9 +146,45 @@
     },
     {
       "component": "Square",
-      "name": "stop",
-      "id": 4936459,
-      "collection": 9402
+      "name": "checkbox-blank-line",
+      "id": 15592470,
+      "collection": 23534
+    },
+    {
+      "component": "Circle",
+      "name": "checkbox-blank-circle-line",
+      "id": 15592468,
+      "collection": 23534
+    },
+    {
+      "component": "MousePointer",
+      "name": "cursor-line",
+      "id": 15590721,
+      "collection": 23534
+    },
+    {
+      "component": "Move",
+      "name": "drag-move-2-line",
+      "id": 15590543,
+      "collection": 23534
+    },
+    {
+      "component": "Text",
+      "name": "text",
+      "id": 15591276,
+      "collection": 23534
+    },
+    {
+      "component": "StickyNote",
+      "name": "sticky-note-line",
+      "id": 15591121,
+      "collection": 23534
+    },
+    {
+      "component": "Image",
+      "name": "image-line",
+      "id": 15592084,
+      "collection": 23534
     },
     {
       "component": "Mic",

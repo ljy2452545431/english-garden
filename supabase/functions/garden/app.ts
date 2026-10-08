@@ -1,4 +1,5 @@
 import {ApiError,requireValue,object,route,json,bytes,publicRecording,STATE_LIMIT,AUDIO_LIMIT,audioTypes} from './helpers.ts';
+import {boardRoute} from './board-routes.ts';
 
 type Config={url:string;serviceKey:string;publicKey:string;origins:string[];aiProvider?:string;aiKey?:string;aiBase?:string;aiModel?:string};
 type Row=Record<string,any>;
@@ -62,6 +63,7 @@ export function createHandler(config:Config,runtime:Runtime={}) {
       const response=await upstream('/rest/v1/'+path,{method,headers:{'content-type':'application/json',prefer:'return=representation'},...(input===undefined?{}:{body:JSON.stringify(input)})});
       if(!response.ok) {
         const detail=await response.json().catch(()=>({}));
+        if(detail.message?.includes('BOARD_ASSET_INVALID'))throw new ApiError(400,'INVALID_IMAGE','画布引用的图片不存在或正在删除');
         if(detail.message?.includes('STATE_INVALID')||detail.code==='23514') throw new ApiError(413,'STATE_TOO_LARGE','记录超出限制或格式无效');
         throw new ApiError(503,'DATABASE_UNAVAILABLE','云端数据库操作失败，请稍后重试');
       }
@@ -135,6 +137,7 @@ export function createHandler(config:Config,runtime:Runtime={}) {
         return respond(200,{token:session.access_token,user:member,learning:{version:rows[0].version,state:rows[0].body}});
       }
       const {member,token,expiresAt}=await authenticate();await limit('request:'+member.id,120);
+      const boardResponse=await boardRoute({request,path,member,headers,rest,rpc,limit,upstream,respond,logger:runtime.logger});if(boardResponse)return boardResponse;
       if(path==='/api/me'&&request.method==='GET') return respond(200,member);
       if(path==='/api/logout'&&request.method==='POST') {
         await rest('garden_revoked_sessions?on_conflict=token_hash','POST',{token_hash:await hash(token),expires_at:expiresAt});

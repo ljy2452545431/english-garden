@@ -21,7 +21,10 @@ export type Decoration = {
   rotation: number;
 };
 export type SavedLook = { id: string; name: string; appearance: Appearance };
-export type Preferences = Appearance & { looks: SavedLook[] };
+export type Preferences = Appearance & {
+  looks: SavedLook[];
+  boardId: string | null;
+};
 export const defaults: Preferences = {
   theme: "garden",
   density: "comfortable",
@@ -35,6 +38,7 @@ export const defaults: Preferences = {
   accent: "theme",
   layout: "balanced",
   looks: [],
+  boardId: null,
   decorations: [],
 };
 const choices: Record<string, string[]> = {
@@ -132,7 +136,17 @@ export function normalizePreferences(value: unknown): Preferences {
           appearance: appearance(item.appearance),
         }))
     : [];
-  return { ...appearance(source), looks };
+  return {
+    ...appearance(source),
+    looks,
+    boardId:
+      typeof source.boardId === "string" &&
+      /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+        source.boardId,
+      )
+        ? source.boardId
+        : null,
+  };
 }
 export function readPreferences(): Preferences {
   try {

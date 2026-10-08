@@ -1,0 +1,132 @@
+{
+  "time": "2026-10-08T09:31:29.522Z",
+  "scope": "两账号低频业务/权限验证；非容量与P95/P99验收",
+  "crossUserRead": true,
+  "versionConflict": true,
+  "uppercaseReferenceProtected": true,
+  "ownerDeletionOnly": true,
+  "unchangedLearningState": true,
+  "temporaryDataRemoved": true,
+  "timings": [
+    {
+      "path": "/api/login",
+      "method": "POST",
+      "status": 200,
+      "ms": 3664
+    },
+    {
+      "path": "/api/login",
+      "method": "POST",
+      "status": 200,
+      "ms": 2316
+    },
+    {
+      "path": "/api/boards",
+      "method": "GET",
+      "status": 401,
+      "ms": 442
+    },
+    {
+      "path": "/api/board-assets",
+      "method": "POST",
+      "status": 201,
+      "ms": 4018
+    },
+    {
+      "path": "/api/boards",
+      "method": "POST",
+      "status": 201,
+      "ms": 2007
+    },
+    {
+      "path": "/api/boards/:id",
+      "method": "GET",
+      "status": 200,
+      "ms": 2637
+    },
+    {
+      "path": "/api/board-assets/:id",
+      "method": "GET",
+      "status": 200,
+      "ms": 3003
+    },
+    {
+      "path": "/api/boards/:id",
+      "method": "PATCH",
+      "status": 200,
+      "ms": 2750
+    },
+    {
+      "path": "/api/boards/:id",
+      "method": "PATCH",
+      "status": 409,
+      "ms": 2467
+    },
+    {
+      "path": "/api/boards/:id",
+      "method": "DELETE",
+      "status": 403,
+      "ms": 2213
+    },
+    {
+      "path": "/api/board-assets/:id",
+      "method": "DELETE",
+      "status": 403,
+      "ms": 2141
+    },
+    {
+      "path": "/api/board-assets/:id",
+      "method": "DELETE",
+      "status": 409,
+      "ms": 2174
+    },
+    {
+      "path": "/api/board-assets",
+      "method": "GET",
+      "status": 200,
+      "ms": 1727
+    },
+    {
+      "path": "/api/board-assets",
+      "method": "GET",
+      "status": 200,
+      "ms": 2143
+    },
+    {
+      "path": "/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 3022
+    },
+    {
+      "path": "/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 2623
+    },
+    {
+      "path": "/api/boards/:id",
+      "method": "DELETE",
+      "status": 200,
+      "ms": 3222
+    },
+    {
+      "path": "/api/board-assets/:id",
+      "method": "DELETE",
+      "status": 200,
+      "ms": 3825
+    },
+    {
+      "path": "/api/logout",
+      "method": "POST",
+      "status": 200,
+      "ms": 1877
+    },
+    {
+      "path": "/api/logout",
+      "method": "POST",
+      "status": 200,
+      "ms": 2593
+    }
+  ]
+}

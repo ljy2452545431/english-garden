@@ -46,7 +46,7 @@ jobs:
       - name: 检查真实 SQLite 后端契约
         run: node --test --experimental-test-coverage server/tests/api.test.mjs
       - name: 检查 Supabase HTTP 适配契约
-        run: node --experimental-strip-types --test --experimental-test-coverage supabase/tests/adapter.test.mjs
+        run: node --experimental-strip-types --test --experimental-test-coverage supabase/tests/*.test.mjs
       - name: 检查 Supabase 源码类型
         run: pnpm exec tsc --noEmit --allowImportingTsExtensions --module esnext --moduleResolution bundler --target es2022 --lib es2023,dom --skipLibCheck supabase/functions/garden/index.ts
       - name: 检查发布用公开配置

@@ -86,8 +86,9 @@ export function SharedLooks({
           setBusy(true);
           setError("");
           try {
-            const { looks: localLooks, ...appearance } = prefs;
+            const { looks: localLooks, boardId, ...appearance } = prefs;
             void localLooks;
+            void boardId;
             const result = await createLook(token, name.trim(), appearance);
             if (identity.current !== token) return;
             setLooks((previous) => [
@@ -140,8 +141,9 @@ export function SharedLooks({
                 className="button secondary"
                 onClick={() =>
                   onApply(
-                    (({ looks, ...appearance }) => {
+                    (({ looks, boardId, ...appearance }) => {
                       void looks;
+                      void boardId;
                       return appearance;
                     })(normalizePreferences(look.appearance)),
                   )

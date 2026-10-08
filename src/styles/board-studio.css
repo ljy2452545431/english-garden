@@ -1,0 +1,139 @@
+.board-studio {
+  margin: 0 0 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--paper);
+  padding: 24px;
+}
+.board-studio-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.board-studio-heading h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+.board-studio-heading .muted {
+  margin: 12px 0 18px;
+  max-width: 42rem;
+}
+.board-gallery {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.board-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.board-gallery-item {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.board-gallery-item > strong {
+  display: block;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.board-gallery-item > .muted {
+  margin: 10px 0;
+}
+.board-workspace {
+  margin: 20px -24px 0;
+  padding: 18px 24px;
+  border-top: 1px solid var(--line);
+}
+.board-save-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.board-save-bar input {
+  flex: 1;
+  min-width: 160px;
+  max-width: 360px;
+}
+.board-save-bar > label {
+  font-size: 0.85rem;
+}
+.board-save-bar .button {
+  padding-inline: 12px;
+  font-size: 0.8rem;
+}
+.board-export-source {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 1600px;
+  pointer-events: none;
+}
+.board-decoration {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--paper);
+  overflow: hidden;
+}
+.board-decoration > div:first-child {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.board-decoration svg {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  max-height: 280px;
+  margin-top: 12px;
+}
+.board-decoration.expanded svg {
+  max-height: none;
+}
+@media (max-width: 800px) {
+  .board-studio {
+    padding: 18px;
+  }
+  .board-studio-heading {
+    flex-direction: column;
+    gap: 0;
+  }
+  .board-gallery-grid {
+    grid-template-columns: 1fr;
+  }
+  .board-workspace {
+    margin-inline: -18px;
+    padding: 16px 12px;
+  }
+  .board-studio-heading > .row {
+    width: 100%;
+  }
+  .board-save-bar .row {
+    gap: 8px;
+  }
+  .board-decoration {
+    padding: 14px;
+  }
+}
+.board-assets {
+  margin-bottom: 32px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.board-assets summary {
+  cursor: pointer;
+  min-height: 28px;
+  font-weight: 600;
+}
+.board-asset-list > div {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+  flex-wrap: wrap;
+}

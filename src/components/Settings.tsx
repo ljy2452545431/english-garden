@@ -1,3 +1,5 @@
+import { BoardAssets } from "./BoardAssets";
+import { BoardStudio } from "./BoardStudio";
 import { useRef, useState } from "react";
 import { Download, Upload } from "./icons";
 import { zh as t } from "../i18n/zh";
@@ -31,6 +33,14 @@ export function Settings({
   }
   return (
     <>
+      <BoardStudio
+        garden={garden}
+        onApply={(boardId) => setPrefs({ ...prefs, boardId })}
+      />
+      <BoardAssets
+        key={garden.auth?.token ?? "preview"}
+        token={garden.auth?.token}
+      />
       <AppearanceStudio prefs={prefs} setPrefs={setPrefs} garden={garden} />
       <div className="settings-records">
         <section className="paper">

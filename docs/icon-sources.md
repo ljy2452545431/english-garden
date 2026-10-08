@@ -1,6 +1,6 @@
 # 图标来源与许可
 
-界面图标从阿里巴巴 iconfont 的公开集合提取 SVG 路径，随站点打包，不依赖外部字体、CDN 脚本或登录。共 36 个原始图标、37 个兼容组件。逐图平台编号、集合编号与组件映射见 [iconfont-manifest.json](./iconfont-manifest.json)。
+界面图标从阿里巴巴 iconfont 的公开集合提取 SVG 路径，随站点打包，不依赖外部字体、CDN 脚本或登录。共 42 个原始图标、43 个兼容组件。逐图平台编号、集合编号与组件映射见 [iconfont-manifest.json](./iconfont-manifest.json)。
 
 ## Ant Design 线性界面图标
 
@@ -20,6 +20,20 @@
 - `Sun → sun-line`：今日学习使用太阳，替代灯泡。
 
 四个图标采用同一线性图标家族；其余沿用 Ant Design 线性图标。品牌植物插画 `GardenScene` 是项目既有原创插画，不属于平台界面图标。
+
+## 自由画布工具图标
+
+画布继续从同一个 Remix Icon 2.5.0 集合 23534 提取，沿用上面的 Apache 2.0 许可原文。组件与平台原始名称如下；具体图标编号列于 manifest，不新增第三方图标集合。
+
+- `MousePointer → cursor-line`：选择元素。
+- `Move → drag-move-2-line`：平移画布。
+- `Text → text`：添加文字。
+- `StickyNote → sticky-note-line`：添加便签。
+- `Square → checkbox-blank-line`：矩形工具；也作为音频停止方块，替换旧 `stop` 禁止符号。
+- `Circle → checkbox-blank-circle-line`：圆形工具，与矩形区分。
+- `Image → image-line`：图片及作品库。
+
+这些路径保留平台原始形状，不通过 CSS 变形模拟其他工具。文字、选择、移动、便签和形状各有独立按钮标签。
 
 ## 渲染与重建
 

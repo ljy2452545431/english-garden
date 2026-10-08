@@ -9,7 +9,10 @@ SOURCES = {
     9402: "https://www.iconfont.cn/api/collection/detail.json?id=9402",
     23534: "https://www.iconfont.cn/api/collection/detail.json?id=23534",
 }
-BOTANICAL = {"Sprout": "plant-line", "Leaf": "leaf-line", "Palette": "palette-line", "Sun": "sun-line"}
+BOTANICAL = {"Sprout": "plant-line", "Leaf": "leaf-line", "Palette": "palette-line", "Sun": "sun-line",
+             "Square": "checkbox-blank-line", "Circle": "checkbox-blank-circle-line",
+             "MousePointer": "cursor-line", "Move": "drag-move-2-line", "Text": "text",
+             "StickyNote": "sticky-note-line", "Image": "image-line"}
 MAPPING = {
     "Sprout": "plant-line", "Sun": "sun-line", "ArrowUpRight": "arrowright",
     "ArrowRight": "arrowright", "Check": "check", "CalendarDays": "calendar",
@@ -17,7 +20,9 @@ MAPPING = {
     "Palette": "palette-line", "Library": "book", "Lock": "lock", "LogOut": "logout",
     "ChevronLeft": "left", "ChevronRight": "right", "Flame": "fire",
     "Leaf": "leaf-line", "PenLine": "edit", "NotebookPen": "edit-square",
-    "Menu": "menu", "X": "close", "Volume2": "sound", "Square": "stop",
+    "Menu": "menu", "X": "close", "Volume2": "sound", "Square": "checkbox-blank-line",
+    "Circle": "checkbox-blank-circle-line", "MousePointer": "cursor-line", "Move": "drag-move-2-line",
+    "Text": "text", "StickyNote": "sticky-note-line", "Image": "image-line",
     "Mic": "audio", "Languages": "translate", "ArrowUp": "arrowup",
     "ArrowDown": "arrowdown", "Download": "download", "Upload": "upload",
     "CloudUpload": "cloud-upload", "Sparkles": "star", "RotateCcw": "undo",

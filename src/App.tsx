@@ -1,3 +1,4 @@
+import { BoardDecoration } from "./components/BoardDecoration";
 import { useEffect, useRef, useState } from "react";
 import {
   Sprout,
@@ -455,6 +456,15 @@ export default function App() {
           <>
             {page === "today" && (
               <>
+                {prefs.boardId && (
+                  <BoardDecoration
+                    key={`${garden.auth?.user.id ?? "preview"}:${prefs.boardId}`}
+                    id={prefs.boardId}
+                    owner={garden.auth?.user.id ?? "preview"}
+                    token={garden.auth?.token}
+                    onHide={() => setPrefs({ ...prefs, boardId: null })}
+                  />
+                )}
                 <section className="hero">
                   <div className="hero-copy">
                     <div className="row">

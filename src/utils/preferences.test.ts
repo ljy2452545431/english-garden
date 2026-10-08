@@ -7,6 +7,18 @@ import {
 } from "./preferences";
 
 describe("外观偏好", () => {
+  it("首页作品仅接受编号，收藏外观不会混入私密画布引用", () => {
+    const boardId = crypto.randomUUID();
+    const prefs = normalizePreferences({ ...defaults, boardId });
+    expect(prefs.boardId).toBe(boardId);
+    expect(
+      normalizePreferences({ boardId: "https://example.com/a.svg" }).boardId,
+    ).toBeNull();
+    expect(saveLook(prefs, "外观").looks[0].appearance).not.toHaveProperty(
+      "boardId",
+    );
+    expect(saveLook(prefs, "外观").boardId).toBe(boardId);
+  });
   it("装饰只接受有限坐标和合法类型，收藏能保留装饰", () => {
     const valid = {
       id: crypto.randomUUID(),
