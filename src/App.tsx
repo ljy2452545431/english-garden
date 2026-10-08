@@ -616,7 +616,7 @@ export default function App() {
           </span>
         </footer>
       </main>
-      <nav className="bottom-nav">
+      <nav className="bottom-nav" aria-label={t.mobileNavigation}>
         {nav
           .filter(([key]) =>
             ["today", "plan", "classroom", "together", "settings"].includes(
@@ -626,6 +626,7 @@ export default function App() {
           .map(([key, label, Icon]) => (
             <button
               className={page === key ? "active" : ""}
+              aria-current={page === key ? "page" : undefined}
               key={key}
               onClick={() => {
                 garden.active ? navigate(key) : setLoginOpen(true);

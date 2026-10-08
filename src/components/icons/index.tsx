@@ -7,12 +7,12 @@ export interface IconProps extends SVGProps<SVGSVGElement> {
   absoluteStrokeWidth?: boolean;
 }
 
-function createIcon(name: keyof typeof iconPaths, diagonal = false) {
+function createIcon(name: keyof typeof iconPaths, collection: 9402 | 23534, diagonal = false) {
   return function IconfontIcon({ size = 24, absoluteStrokeWidth: _absoluteStrokeWidth, strokeWidth: _strokeWidth, children, ...props }: IconProps) {
     const labelled = Boolean(props['aria-label'] || props['aria-labelledby']);
     return <svg width={size} height={size} viewBox="0 0 1024 1024" fill="currentColor"
       aria-hidden={labelled ? undefined : true} role={labelled ? 'img' : undefined}
-      focusable="false" {...props} data-icon-source={`iconfont:9402:${name}`}>
+      focusable="false" {...props} data-icon-source={`iconfont:${collection}:${name}`}>
       <g transform={diagonal ? 'rotate(-45 512 512)' : undefined}>
         {iconPaths[name].map((path, index) => <path key={index} d={path} />)}
       </g>
@@ -21,40 +21,40 @@ function createIcon(name: keyof typeof iconPaths, diagonal = false) {
   };
 }
 
-export const Sprout = createIcon('rocket', false);
-export const Sun = createIcon('bulb', false);
-export const ArrowUpRight = createIcon('arrowright', true);
-export const ArrowRight = createIcon('arrowright', false);
-export const Check = createIcon('check', false);
-export const CalendarDays = createIcon('calendar', false);
-export const BookOpen = createIcon('read', false);
-export const Headphones = createIcon('customerservice', false);
-export const Heart = createIcon('heart', false);
-export const Palette = createIcon('skin', false);
-export const Library = createIcon('book', false);
-export const Lock = createIcon('lock', false);
-export const LogOut = createIcon('logout', false);
-export const ChevronLeft = createIcon('left', false);
-export const ChevronRight = createIcon('right', false);
-export const Flame = createIcon('fire', false);
-export const Leaf = createIcon('experiment', false);
-export const PenLine = createIcon('edit', false);
-export const NotebookPen = createIcon('edit-square', false);
-export const Menu = createIcon('menu', false);
-export const X = createIcon('close', false);
-export const Volume2 = createIcon('sound', false);
-export const Square = createIcon('stop', false);
-export const Mic = createIcon('audio', false);
-export const Languages = createIcon('translate', false);
-export const ArrowUp = createIcon('arrowup', false);
-export const ArrowDown = createIcon('arrowdown', false);
-export const Download = createIcon('download', false);
-export const Upload = createIcon('upload', false);
-export const CloudUpload = createIcon('cloud-upload', false);
-export const Sparkles = createIcon('star', false);
-export const RotateCcw = createIcon('undo', false);
-export const Pause = createIcon('pause', false);
-export const Play = createIcon('caret-right', false);
-export const Send = createIcon('send', false);
-export const RefreshCw = createIcon('reload', false);
-export const Trash2 = createIcon('delete', false);
+export const Sprout = createIcon('plant-line', 23534, false);
+export const Sun = createIcon('sun-line', 23534, false);
+export const ArrowUpRight = createIcon('arrowright', 9402, true);
+export const ArrowRight = createIcon('arrowright', 9402, false);
+export const Check = createIcon('check', 9402, false);
+export const CalendarDays = createIcon('calendar', 9402, false);
+export const BookOpen = createIcon('read', 9402, false);
+export const Headphones = createIcon('customerservice', 9402, false);
+export const Heart = createIcon('heart', 9402, false);
+export const Palette = createIcon('palette-line', 23534, false);
+export const Library = createIcon('book', 9402, false);
+export const Lock = createIcon('lock', 9402, false);
+export const LogOut = createIcon('logout', 9402, false);
+export const ChevronLeft = createIcon('left', 9402, false);
+export const ChevronRight = createIcon('right', 9402, false);
+export const Flame = createIcon('fire', 9402, false);
+export const Leaf = createIcon('leaf-line', 23534, false);
+export const PenLine = createIcon('edit', 9402, false);
+export const NotebookPen = createIcon('edit-square', 9402, false);
+export const Menu = createIcon('menu', 9402, false);
+export const X = createIcon('close', 9402, false);
+export const Volume2 = createIcon('sound', 9402, false);
+export const Square = createIcon('stop', 9402, false);
+export const Mic = createIcon('audio', 9402, false);
+export const Languages = createIcon('translate', 9402, false);
+export const ArrowUp = createIcon('arrowup', 9402, false);
+export const ArrowDown = createIcon('arrowdown', 9402, false);
+export const Download = createIcon('download', 9402, false);
+export const Upload = createIcon('upload', 9402, false);
+export const CloudUpload = createIcon('cloud-upload', 9402, false);
+export const Sparkles = createIcon('star', 9402, false);
+export const RotateCcw = createIcon('undo', 9402, false);
+export const Pause = createIcon('pause', 9402, false);
+export const Play = createIcon('caret-right', 9402, false);
+export const Send = createIcon('send', 9402, false);
+export const RefreshCw = createIcon('reload', 9402, false);
+export const Trash2 = createIcon('delete', 9402, false);

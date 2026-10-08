@@ -7,7 +7,7 @@ const ENTER_SELECTOR =
   "[data-motion-enter], .hero-copy > *, .gate-copy > *, .page-intro > *";
 const CARD_SELECTOR = "[data-motion-card], .paper, .week-card";
 const PRESS_SELECTOR =
-  "[data-motion-press], .button, .icon-button, .pill, .task-check, .theme-choice, .garden-water, .match-word, .sidebar nav button, .bottom-nav button";
+  "[data-motion-press], .button, .icon-button, .pill, .task-check, .theme-choice, .garden-water, .match-word, .sidebar nav button, .bottom-nav button, .skill-tabs button";
 
 /** 动效始终局限在当前页面；减少动态效果或关闭动画时，内容直接可用。 */
 export function useGardenMotion(

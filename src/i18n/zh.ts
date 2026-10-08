@@ -20,7 +20,7 @@ export const zh = {
   moveUp:'上移',moveDown:'下移',reset:'恢复默认',close:'关闭',done:'完成',back:'返回',save:'保存',error:'操作未完成，请稍后重试',empty:'暂无记录',delete:'删除',share:'分享给搭档',
   focus:'把这一刻留给英语',begin:'开始',pause:'暂停',timerDone:'这一段专注完成了，伸个懒腰吧。',
   milestones:'共同的小里程碑',milestone1:'第一颗种子',milestone7:'一周的坚持',milestone28:'一个月的变化',milestone84:'基础长出新芽',
-  gateTitle:'欢迎来到你们的学习花园',gateDescription:'从最简单的句子开始。每日计划、词卡、练习和作品，都在这里慢慢积累。',
+  mobileNavigation:'学习导航',classroomTabs:'学习科目',gateTitle:'一起，种下英语的小进步',gateDescription:'从最简单的句子开始。每日计划、词卡、练习和作品，都在这里慢慢积累。',
   catalog:'本周的学习包',viewWeek:'进入这一周',chooseDay:'选择学习日',backToday:'回到今天',noKey:'不要在网页填写 AI 密钥。密钥仅配置在后端环境中。',
   install:'手机浏览器可通过“添加到主屏幕”使用。',saveRecording:'保存到私密空间',recordings:'已保存的录音',connection:'连接状态',serverSetup:'后端部署说明',
   restoreWarning:'恢复会替换当前账号的学习记录；请先导出备份。',confirmImport:'确认恢复',cancel:'取消',pending:'待配置',device:'主题和布局仅保存在这台设备上。',

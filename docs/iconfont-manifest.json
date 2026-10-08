@@ -1,192 +1,238 @@
 {
-  "source": "https://www.iconfont.cn/api/collection/detail.json?id=9402",
-  "collection": 9402,
-  "collectionName": "Ant Design 官方图标库",
+  "sources": [
+    {
+      "url": "https://www.iconfont.cn/api/collection/detail.json?id=9402",
+      "collection": 9402,
+      "collectionName": "Ant Design 官方图标库"
+    },
+    {
+      "url": "https://www.iconfont.cn/api/collection/detail.json?id=23534",
+      "collection": 23534,
+      "collectionName": "Remix_Icon_v2.5.0"
+    }
+  ],
   "icons": [
     {
       "component": "Sprout",
-      "name": "rocket",
-      "id": 4766778
+      "name": "plant-line",
+      "id": 15592331,
+      "collection": 23534
     },
     {
       "component": "Sun",
-      "name": "bulb",
-      "id": 4766678
+      "name": "sun-line",
+      "id": 15593108,
+      "collection": 23534
     },
     {
       "component": "ArrowUpRight",
       "name": "arrowright",
-      "id": 4767020
+      "id": 4767020,
+      "collection": 9402
     },
     {
       "component": "ArrowRight",
       "name": "arrowright",
-      "id": 4767020
+      "id": 4767020,
+      "collection": 9402
     },
     {
       "component": "Check",
       "name": "check",
-      "id": 4767093
+      "id": 4767093,
+      "collection": 9402
     },
     {
       "component": "CalendarDays",
       "name": "calendar",
-      "id": 4766858
+      "id": 4766858,
+      "collection": 9402
     },
     {
       "component": "BookOpen",
       "name": "read",
-      "id": 4766888
+      "id": 4766888,
+      "collection": 9402
     },
     {
       "component": "Headphones",
       "name": "customerservice",
-      "id": 4766762
+      "id": 4766762,
+      "collection": 9402
     },
     {
       "component": "Heart",
       "name": "heart",
-      "id": 4766951
+      "id": 4766951,
+      "collection": 9402
     },
     {
       "component": "Palette",
-      "name": "skin",
-      "id": 4766684
+      "name": "palette-line",
+      "id": 15590641,
+      "collection": 23534
     },
     {
       "component": "Library",
       "name": "book",
-      "id": 4766454
+      "id": 4766454,
+      "collection": 9402
     },
     {
       "component": "Lock",
       "name": "lock",
-      "id": 4766695
+      "id": 4766695,
+      "collection": 9402
     },
     {
       "component": "LogOut",
       "name": "logout",
-      "id": 4765888
+      "id": 4765888,
+      "collection": 9402
     },
     {
       "component": "ChevronLeft",
       "name": "left",
-      "id": 4767012
+      "id": 4767012,
+      "collection": 9402
     },
     {
       "component": "ChevronRight",
       "name": "right",
-      "id": 4767011
+      "id": 4767011,
+      "collection": 9402
     },
     {
       "component": "Flame",
       "name": "fire",
-      "id": 4936460
+      "id": 4936460,
+      "collection": 9402
     },
     {
       "component": "Leaf",
-      "name": "experiment",
-      "id": 4766679
+      "name": "leaf-line",
+      "id": 15592318,
+      "collection": 23534
     },
     {
       "component": "PenLine",
       "name": "edit",
-      "id": 4766959
+      "id": 4766959,
+      "collection": 9402
     },
     {
       "component": "NotebookPen",
       "name": "edit-square",
-      "id": 4765957
+      "id": 4765957,
+      "collection": 9402
     },
     {
       "component": "Menu",
       "name": "menu",
-      "id": 4767059
+      "id": 4767059,
+      "collection": 9402
     },
     {
       "component": "X",
       "name": "close",
-      "id": 4767096
+      "id": 4767096,
+      "collection": 9402
     },
     {
       "component": "Volume2",
       "name": "sound",
-      "id": 4766907
+      "id": 4766907,
+      "collection": 9402
     },
     {
       "component": "Square",
       "name": "stop",
-      "id": 4936459
+      "id": 4936459,
+      "collection": 9402
     },
     {
       "component": "Mic",
       "name": "audio",
-      "id": 5756281
+      "id": 5756281,
+      "collection": 9402
     },
     {
       "component": "Languages",
       "name": "translate",
-      "id": 8094821
+      "id": 8094821,
+      "collection": 9402
     },
     {
       "component": "ArrowUp",
       "name": "arrowup",
-      "id": 4767021
+      "id": 4767021,
+      "collection": 9402
     },
     {
       "component": "ArrowDown",
       "name": "arrowdown",
-      "id": 4767023
+      "id": 4767023,
+      "collection": 9402
     },
     {
       "component": "Download",
       "name": "download",
-      "id": 4767031
+      "id": 4767031,
+      "collection": 9402
     },
     {
       "component": "Upload",
       "name": "upload",
-      "id": 4767025
+      "id": 4767025,
+      "collection": 9402
     },
     {
       "component": "CloudUpload",
       "name": "cloud-upload",
-      "id": 4766901
+      "id": 4766901,
+      "collection": 9402
     },
     {
       "component": "Sparkles",
       "name": "star",
-      "id": 4766954
+      "id": 4766954,
+      "collection": 9402
     },
     {
       "component": "RotateCcw",
       "name": "undo",
-      "id": 4765837
+      "id": 4765837,
+      "collection": 9402
     },
     {
       "component": "Pause",
       "name": "pause",
-      "id": 4767104
+      "id": 4767104,
+      "collection": 9402
     },
     {
       "component": "Play",
       "name": "caret-right",
-      "id": 6598342
+      "id": 6598342,
+      "collection": 9402
     },
     {
       "component": "Send",
       "name": "send",
-      "id": 9230696
+      "id": 9230696,
+      "collection": 9402
     },
     {
       "component": "RefreshCw",
       "name": "reload",
-      "id": 4765852
+      "id": 4765852,
+      "collection": 9402
     },
     {
       "component": "Trash2",
       "name": "delete",
-      "id": 4766676
+      "id": 4766676,
+      "collection": 9402
     }
   ]
 }
