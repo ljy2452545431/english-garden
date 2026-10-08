@@ -10,6 +10,7 @@ function fixture(options={}) {
   const result=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json'}});
   const fakeFetch=async(url,init={})=>{
     const parsed=new URL(url);const path=parsed.pathname;calls.push({path,init});const body=init.body&&typeof init.body==='string'?JSON.parse(init.body):{};const header=new Headers(init.headers);
+    const intercepted=await options.intercept?.({path,parsed,body,init});if(intercepted)return intercepted;
     if(parsed.hostname==='api.deepseek.com')return options.aiFetch?.(url,init)??result({choices:[{message:{content:'练习建议'}}]});
     if(path==='/auth/v1/token') return body.password==='wrong'?result({},400):result({access_token:body.email==='outsider@test.example'?'outsider':body.email==='bob@test.example'?'b':'a',user:{id:body.email==='outsider@test.example'?'outsider':body.email==='bob@test.example'?bid:aid,email:body.email}});
     if(path==='/auth/v1/user') {const token=header.get('authorization')?.slice(7);return ['a','b','outsider'].includes(token)?result({id:token==='a'?aid:token==='b'?bid:'outsider',email:`${token}@test.example`}):result({},401);}
@@ -41,12 +42,77 @@ function fixture(options={}) {
     }
     throw new Error('Unexpected upstream '+path);
   };
-  const handler=createHandler({...config,...options.config},{fetch:fakeFetch,aiTimeoutMs:options.aiTimeoutMs});
+  const handler=createHandler({...config,...options.config},{fetch:fakeFetch,aiTimeoutMs:options.aiTimeoutMs,logger:options.logger});
   const call=async(path,body,token,method=body?'POST':'GET',headers={})=>{
     const response=await handler(new Request('https://example.supabase.co/functions/v1/garden'+path,{method,headers:{'content-type':'application/json',...(token?{authorization:`Bearer ${token}`}:{}) ,...headers},...(body===undefined?{}:{body:JSON.stringify(body)})}));return {status:response.status,...await response.json()};
   };
   return {handler,call,calls,leases,recordings,audio,setDeleteFailure:value=>deleteFails=value,anotherHandler:()=>createHandler({...config,...options.config},{fetch:fakeFetch,aiTimeoutMs:options.aiTimeoutMs}),setLimit:value=>forceLimit=value,setConflict:value=>conflict=value};
 }
+test('登录一次返回本人学习状态，六次上游请求且不再次查询 Auth user',async()=>{
+  const f=fixture();await f.call('/api/state',{version:0,state:{notes:'only-a'}},'a','PATCH');f.calls.length=0;
+  const logged=await f.call('/api/login',{username:'alice@test.example',password:'ok'});
+  assert.equal(logged.status,200);assert.deepEqual(logged.data.learning,{version:1,state:{notes:'only-a'}});
+  assert.equal(f.calls.length,6);assert.equal(f.calls.some(c=>c.path==='/auth/v1/user'),false);
+  const other=await f.call('/api/login',{username:'bob@test.example',password:'ok'});
+  assert.deepEqual(other.data.learning,{version:0,state:{}});
+});
+test('登录限流和成员校验并行，成员与撤销检查结束前不读状态',async()=>{
+  const pending=new Map();const f=fixture({intercept:({path,body})=>{
+    const key=path.endsWith('garden_take_limit')?body.p_key:path.endsWith('/members')?'member':path.endsWith('/garden_revoked_sessions')?'revoked':null;
+    if(key)return new Promise(resolve=>pending.set(key,()=>resolve(undefined)));
+  }});
+  const logged=f.call('/api/login',{username:'ljy',password:'ok'});
+  const waitFor=async predicate=>{for(let i=0;i<100&&!predicate();i++)await new Promise(resolve=>setTimeout(resolve,1));assert.ok(predicate());};
+  await waitFor(()=>pending.size===2);assert.equal(f.calls.some(c=>c.path==='/auth/v1/token'),false);
+  [...pending.values()].forEach(resolve=>resolve());pending.clear();
+  await waitFor(()=>pending.has('member')&&pending.has('revoked'));
+  pending.get('member')();await new Promise(resolve=>setTimeout(resolve,1));assert.equal(f.calls.some(c=>c.path==='/rest/v1/states'),false);
+  pending.get('revoked')();assert.equal((await logged).status,200);
+});
+test('登录失败不泄露令牌或学习状态：限流、非成员、撤销和状态故障',async()=>{
+  const limited=fixture();limited.setLimit(true);assert.equal((await limited.call('/api/login',{username:'ljy',password:'ok'})).status,429);
+  assert.equal(limited.calls.some(c=>c.path==='/auth/v1/token'),false);
+  const outsider=fixture();const denied=await outsider.call('/api/login',{username:'outsider@test.example',password:'ok'});
+  assert.equal(denied.status,403);assert.equal(denied.data,null);assert.equal(outsider.calls.some(c=>c.path==='/rest/v1/states'),false);
+  const revoked=fixture();await revoked.call('/api/logout',{},'a');revoked.calls.length=0;
+  const exited=await revoked.call('/api/login',{username:'ljy',password:'ok'});assert.equal(exited.status,401);assert.equal(exited.data,null);assert.equal(revoked.calls.some(c=>c.path==='/rest/v1/states'),false);
+  for(const [response,code] of [[new Response('[]'),'STATE_MISSING'],[new Response('{}',{status:500}),'DATABASE_UNAVAILABLE']]){
+    const broken=fixture({intercept:({path})=>path==='/rest/v1/states'?response:undefined});const result=await broken.call('/api/login',{username:'ljy',password:'ok'});
+    assert.equal(result.status,503);assert.equal(result.data,null);assert.equal(result.error.code,code);
+  }
+});
+test('登录十二秒总预算、单次八秒预算及超时分类，无自动重试',async t=>{
+  const nativeTimeout=AbortSignal.timeout;
+  for(const [expired,code] of [[12000,'LOGIN_TIMEOUT'],[8000,'SUPABASE_TIMEOUT']]){
+    const budgets=[];t.mock.method(AbortSignal,'timeout',milliseconds=>{
+      budgets.push(milliseconds);return milliseconds===expired?AbortSignal.abort(new DOMException('Timed out','TimeoutError')):nativeTimeout(milliseconds);
+    });
+    try{
+      const f=fixture({intercept:({init})=>{if(init.signal.aborted)throw init.signal.reason;}});
+      const result=await f.call('/api/login',{username:'ljy',password:'ok'});
+      assert.equal(result.status,504);assert.equal(result.error.code,code);assert.equal(result.data,null);
+      assert.equal(budgets[0],12000);assert.ok(budgets.slice(1).every(value=>value===8000));
+      assert.equal(f.calls.filter(c=>c.path==='/rest/v1/rpc/garden_take_limit').length,2);
+      assert.equal(f.calls.some(c=>c.path==='/auth/v1/token'),false);
+    }finally{t.mock.restoreAll();}
+  }
+  const budgets=[];t.mock.method(AbortSignal,'timeout',milliseconds=>{budgets.push(milliseconds);return nativeTimeout(milliseconds);});
+  await fixture().call('/api/me',undefined,'a');assert.equal(budgets[0],45000);
+});
+test('响应头返回后正文读取超时保留超时分类，不泄露登录结果',async()=>{
+  const f=fixture({intercept:({path})=>path==='/rest/v1/states'?new Response(new ReadableStream({start(controller){controller.error(new DOMException('Timed out','TimeoutError'));}})):undefined});
+  const result=await f.call('/api/login',{username:'ljy',password:'ok'});
+  assert.equal(result.status,504);assert.equal(result.error.code,'SUPABASE_TIMEOUT');assert.equal(result.data,null);
+});
+test('登录诊断仅含耗时与阶段，限频且日志故障不影响登录',async()=>{
+  const logs=[];const f=fixture({logger:entry=>logs.push(entry)});
+  await f.call('/api/login',{username:'ljy',password:'ok'});await f.call('/api/login',{username:'jfl',password:'ok'});
+  assert.equal(logs.length,1);assert.equal(logs[0].event,'login_success');assert.equal(logs[0].upstreamCalls,6);
+  assert.deepEqual(Object.keys(logs[0].stages),['limits','auth','membership','state']);
+  assert.equal(/ljy|jfl|token|password|email|learning|notes/.test(JSON.stringify(logs)),false);
+  const broken=fixture({logger:()=>{throw new Error('logger failed');}});
+  assert.equal((await broken.call('/api/login',{username:'ljy',password:'ok'})).status,200);
+});
 test('身份验证、双人 allowlist、状态隔离及摘要和409契约',async()=>{
   const {call}=fixture();assert.equal((await call('/api/state')).status,401);
   assert.equal((await call('/api/login',{username:'outsider@test.example',password:'ok'})).status,403);

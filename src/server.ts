@@ -1,13 +1,18 @@
+import { zh as t } from './i18n/zh';
 export type User={id:string;username:string;displayName:string};
 const API=import.meta.env.VITE_API_URL?.replace(/\/$/,'')??'';
 const publicKey=import.meta.env.VITE_API_PUBLIC_KEY??'';
 export const configured=Boolean(API);
-export async function request<T>(path:string,token?:string,body?:unknown,method?:string):Promise<T>{
+export async function request<T>(path:string,token?:string,body?:unknown,method?:string,options:{timeoutMs?:number}={}):Promise<T>{
   if(!API)throw new Error('私密服务尚未配置');
-  const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),25000);
+  const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),options.timeoutMs??25000);
   try{
     const res=await fetch(`${API}${path}`,{method:method??(body?'POST':'GET'),headers:{...(body?{'Content-Type':'application/json'}:{}),...(publicKey?{apikey:publicKey}:{}),...(token?{Authorization:`Bearer ${token}`}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:controller.signal});
-    const result=await res.json();if(!res.ok||!result.success)throw Object.assign(new Error(result.error?.message??'服务暂时不可用'),{status:res.status,code:result.error?.code});return result.data as T;
+    let result;try { result=await res.json(); } catch { throw new Error(t.serviceInvalid); }if(!res.ok||!result.success)throw Object.assign(new Error(result.error?.message??'服务暂时不可用'),{status:res.status,code:result.error?.code});return result.data as T;
+  }catch(error){
+    if(controller.signal.aborted)throw new Error(t.serviceTimeout);
+    if(error instanceof TypeError)throw new Error(t.serviceNetwork);
+    throw error;
   }finally{clearTimeout(timeout);}
 }
 export async function uploadRecording(token:string,blob:Blob,title:string){

@@ -13,7 +13,8 @@ export function createHandler(config:Config,runtime:Runtime={}) {
   const upstreamUrl=new URL(config.url);
   requireValue(upstreamUrl.protocol==='https:'||['localhost','127.0.0.1','kong'].includes(upstreamUrl.hostname),503,'NOT_CONFIGURED','Supabase 地址配置无效');
   const base=config.url.replace(/\/$/,'');const fetcher=runtime.fetch??fetch;
-  const origins=new Set(config.origins);let lastLog=0;
+  const origins=new Set(config.origins);let lastLog=0,lastLoginLog=0;
+  const log=(data:Record<string,unknown>)=>{try{runtime.logger?.(data);}catch{/* 诊断输出失败不得影响请求结果。 */}};
   let aiBase='';
   if(config.aiKey) {
     requireValue(['deepseek','mimo'].includes(config.aiProvider??''),503,'AI_CONFIG_INVALID','AI 提供商配置无效');
@@ -22,12 +23,27 @@ export function createHandler(config:Config,runtime:Runtime={}) {
     aiBase=aiUrl.toString().replace(/\/$/,'');
   }
   return async function handle(request:Request):Promise<Response> {
-    const started=Date.now();const overall=AbortSignal.timeout(45000);
+    const started=Date.now();const path=route(new URL(request.url).pathname);
+    const isLogin=path==='/api/login'&&request.method==='POST';
+    const overall=AbortSignal.timeout(isLogin?12000:45000);
+    let upstreamCalls=0;const stages:Record<string,number>={};
+    async function stage<T>(name:string,operation:()=>Promise<T>):Promise<T>{
+      const began=Date.now();try{return await operation();}finally{stages[name]=Date.now()-began;}
+    }
+    function loginLog(success:boolean,code?:string){
+      if(!isLogin||Date.now()-lastLoginLog<10000)return;
+      lastLoginLog=Date.now();log({event:success?'login_success':'login_failure',durationMs:Date.now()-started,stages,upstreamCalls,...(code?{code}:{})});
+    }
     const origin=request.headers.get('origin');const headers:Record<string,string>={'cache-control':'no-store','x-content-type-options':'nosniff'};
     const respond=(status:number,data:unknown=null,error:unknown=null)=>new Response(JSON.stringify({success:error===null,data,error}),{status,headers:{...headers,'content-type':'application/json; charset=utf-8'}});
     async function upstream(path:string,init:RequestInit={},token?:string):Promise<Response> {
-      try {return await fetcher(base+path,{...init,redirect:'error',signal:AbortSignal.any([overall,AbortSignal.timeout(8000)]),headers:{apikey:config.publicKey,authorization:`Bearer ${token??config.serviceKey}`,...(token?{}:{apikey:config.serviceKey}),...init.headers}});}
-      catch {throw new ApiError(503,'SUPABASE_UNAVAILABLE','云端服务暂时不可用，请稍后重试');}
+      const timeout=AbortSignal.timeout(8000);upstreamCalls++;
+      try {return await fetcher(base+path,{...init,redirect:'error',signal:AbortSignal.any([overall,timeout]),headers:{apikey:config.publicKey,authorization:`Bearer ${token??config.serviceKey}`,...(token?{}:{apikey:config.serviceKey}),...init.headers}});}
+      catch {
+        if(overall.aborted)throw new ApiError(504,isLogin?'LOGIN_TIMEOUT':'REQUEST_TIMEOUT',isLogin?'登录连接超时，请检查网络后重试':'云端请求超时，请稍后重试');
+        if(timeout.aborted)throw new ApiError(504,'SUPABASE_TIMEOUT','云端连接超时，请检查网络后重试');
+        throw new ApiError(503,'SUPABASE_UNAVAILABLE','云端服务暂时不可用，请稍后重试');
+      }
     }
     async function rest(path:string,method='GET',input?:unknown):Promise<any> {
       const response=await upstream('/rest/v1/'+path,{method,headers:{'content-type':'application/json',prefer:'return=representation'},...(input===undefined?{}:{body:JSON.stringify(input)})});
@@ -43,9 +59,12 @@ export function createHandler(config:Config,runtime:Runtime={}) {
       requireValue(await rpc('garden_take_limit',{p_key:key,p_max:max,p_seconds:60}),429,'RATE_LIMIT','操作过于频繁，请稍后重试');
     }
     async function membership(authUser:Row,token:string):Promise<Member> {
-      const rows=await rest(`members?id=eq.${encodeURIComponent(authUser.id)}&select=id,display_name`);
+      const tokenHash=await hash(token);
+      const [rows,revoked]=await Promise.all([
+        rest(`members?id=eq.${encodeURIComponent(authUser.id)}&select=id,display_name`),
+        rest(`garden_revoked_sessions?token_hash=eq.${tokenHash}&expires_at=gt.${encodeURIComponent(new Date().toISOString())}&select=token_hash`),
+      ]);
       requireValue(rows.length===1,403,'NOT_MEMBER','此账号未获双人空间授权');
-      const revoked=await rest(`garden_revoked_sessions?token_hash=eq.${await hash(token)}&expires_at=gt.${encodeURIComponent(new Date().toISOString())}&select=token_hash`);
       requireValue(!revoked.length,401,'UNAUTHORIZED','登录已退出，请重新登录');
       const email=authUser.email??'';
       return {id:rows[0].id,username:email.endsWith('@english-garden.local')?email.slice(0,-21):email,displayName:rows[0].display_name};
@@ -82,7 +101,7 @@ export function createHandler(config:Config,runtime:Runtime={}) {
       requireValue(!origin||origins.has(origin),403,'ORIGIN_DENIED','来源未获授权');
       if(origin){headers['access-control-allow-origin']=origin;headers.vary='Origin';}
       if(request.method==='OPTIONS') return new Response(null,{status:204,headers:{...headers,'access-control-allow-methods':'GET,POST,PATCH,DELETE,OPTIONS','access-control-allow-headers':'authorization,apikey,content-type,x-client-info','access-control-max-age':'600'}});
-      const url=new URL(request.url);const path=route(url.pathname);
+      const url=new URL(request.url);
       if(path==='/health'&&request.method==='GET') return respond(200,{status:'ok'});
       if(path==='/api/login'&&request.method==='POST') {
         const input=await json(request);
@@ -90,11 +109,17 @@ export function createHandler(config:Config,runtime:Runtime={}) {
         const username=input.username.trim().toLowerCase();
         requireValue(username.includes('@')||['ljy','jfl'].includes(username),400,'INVALID_INPUT','用户名只允许 ljy / jfl，其他账号请使用完整邮箱');
         const email=username.includes('@')?username:`${username}@english-garden.local`;
-        await limit('login:global',60);await limit('login:'+await hash(email),10);
-        const response=await upstream('/auth/v1/token?grant_type=password',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password:input.password})});
-        requireValue(response.ok,401,'INVALID_CREDENTIALS','邮箱或密码错误');const session=await response.json();
-        const member=await membership(session.user,session.access_token);
-        return respond(200,{token:session.access_token,user:member});
+        const emailHash=await hash(email);
+        await stage('limits',()=>Promise.all([limit('login:global',60),limit('login:'+emailHash,10)]));
+        const session=await stage('auth',async()=>{
+          const response=await upstream('/auth/v1/token?grant_type=password',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password:input.password})});
+          requireValue(response.ok,401,'INVALID_CREDENTIALS','邮箱或密码错误');return response.json();
+        });
+        const member=await stage('membership',()=>membership(session.user,session.access_token));
+        const rows=await stage('state',()=>rest(`states?user_id=eq.${member.id}&select=version,body`));
+        requireValue(rows.length===1,503,'STATE_MISSING','学习记录尚未初始化');
+        loginLog(true);
+        return respond(200,{token:session.access_token,user:member,learning:{version:rows[0].version,state:rows[0].body}});
       }
       const {member,token,expiresAt}=await authenticate();await limit('request:'+member.id,120);
       if(path==='/api/me'&&request.method==='GET') return respond(200,member);
@@ -158,7 +183,11 @@ export function createHandler(config:Config,runtime:Runtime={}) {
       }
       throw new ApiError(404,'NOT_FOUND','接口不存在');
     } catch(error) {
-      const failure=error instanceof ApiError?error:new ApiError(500,'INTERNAL_ERROR','服务器处理失败');return respond(failure.status,null,{code:failure.code,message:failure.message});
+      const failure=error instanceof ApiError?error:
+        overall.aborted?new ApiError(504,isLogin?'LOGIN_TIMEOUT':'REQUEST_TIMEOUT','云端请求超时，请检查网络后重试'):
+        error instanceof DOMException&&['TimeoutError','AbortError'].includes(error.name)?new ApiError(504,'SUPABASE_TIMEOUT','云端连接超时，请检查网络后重试'):
+        new ApiError(500,'INTERNAL_ERROR','服务器处理失败');
+      loginLog(false,failure.code);return respond(failure.status,null,{code:failure.code,message:failure.message});
     }
   };
 }

@@ -691,6 +691,7 @@ export default function App() {
                 className="stack"
                 onSubmit={async (e) => {
                   e.preventDefault();
+                  if (busy) return;
                   setBusy(true);
                   setLoginError("");
                   try {

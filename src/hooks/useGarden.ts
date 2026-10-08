@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { normalizeState, type LearningState } from '../utils/learning';
 import { request, type User } from '../server';
+import { loginAndLoad } from '../@apis/auth';
 const KEY='english-garden.preview.v1';
 function initial(){try{return normalizeState(JSON.parse(localStorage.getItem(KEY)??'null'));}catch{return normalizeState(null);}}
 export function useGarden(){
@@ -38,8 +39,9 @@ export function useGarden(){
   },[auth]);
   useEffect(()=>{const before=(e:BeforeUnloadEvent)=>{if(identity.current&&dirty.current){preserve();e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',before);return()=>window.removeEventListener('beforeunload',before);},[]);
   async function login(username:string,password:string){
-    const data=await request<{token:string;user:User}>('/api/login',undefined,{username,password});
-    const loaded=await request<{version:number;state:unknown}>('/api/state',data.token);
+    const result=await loginAndLoad(username,password);
+    const data={token:result.token,user:result.user};
+    const loaded=result.learning;
     const next={...normalizeState(loaded.state),nickname:data.user.displayName};
     recoveryRef.current=null;setRecovery(null);
     try{const raw=sessionStorage.getItem(pendingKey(data.user.id));if(raw){const pending=JSON.parse(raw);recoveryRef.current=normalizeState(pending.state);setRecovery(recoveryRef.current);}}catch{setStatus('临时备份无法读取，请保留当前标签页');}
