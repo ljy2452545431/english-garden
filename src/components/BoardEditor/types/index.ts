@@ -5,8 +5,17 @@ export type BoardEditorProps = {
   onUpload: (file: File) => Promise<string>;
   assetUrls: Record<string, string>;
   onExit?: () => void;
+  title?: string;
+  onTitleChange?: (title: string) => void;
+  onSave?: () => void;
+  onExport?: () => void;
+  canSave?: boolean;
+  busy?: boolean;
+  status?: string;
+  onFlushDraft?: () => void;
 };
-export type Tool = "select" | "pan" | "pen" | "text" | "note" | "rect" | "ellipse";
+export type Tool =
+  "select" | "pan" | "pen" | "text" | "note" | "rect" | "ellipse";
 export type Gesture = {
   pointerId: number;
   mode: "move" | "resize" | "draw" | "pan";
@@ -16,4 +25,3 @@ export type Gesture = {
   scroll?: [number, number];
   preview?: Partial<BoardNode>;
 };
-

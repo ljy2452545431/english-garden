@@ -27,19 +27,31 @@ export async function prepareImage(file: File): Promise<Blob> {
     bitmap.close();
   }
 }
-export async function exportBoardPng(svg: SVGSVGElement, title: string) {
+export async function exportBoardPng(
+  svg: SVGSVGElement,
+  title: string,
+  isActive: () => boolean = () => true,
+) {
+  const check = () => {
+    if (!isActive()) throw new Error("导出已取消，账号或编辑会话已改变");
+  };
+  check();
   const clone = svg.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   for (const image of Array.from(clone.querySelectorAll("image"))) {
     const href = image.getAttribute("href");
     if (!href?.startsWith("blob:")) continue;
-    const blob = await (await fetch(href)).blob();
+    const response = await fetch(href);
+    check();
+    const blob = await response.blob();
+    check();
     const data = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result));
       reader.onerror = () => reject(new Error("导出图片失败"));
       reader.readAsDataURL(blob);
     });
+    check();
     image.setAttribute("href", data);
   }
   const view = svg.viewBox.baseVal;
@@ -50,10 +62,13 @@ export async function exportBoardPng(svg: SVGSVGElement, title: string) {
       type: "image/svg+xml",
     }),
   );
+  let output: string | undefined,
+    downloaded = false;
   try {
     const image = new Image();
     image.src = url;
     await image.decode();
+    check();
     const canvas = document.createElement("canvas");
     canvas.width = view.width;
     canvas.height = view.height;
@@ -61,14 +76,19 @@ export async function exportBoardPng(svg: SVGSVGElement, title: string) {
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, "image/png"),
     );
+    check();
     if (!blob) throw new Error("导出失败");
-    const output = URL.createObjectURL(blob);
+    output = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = output;
     anchor.download = `${title.replace(/[\\/:*?"<>|]/g, "_") || "我的画布"}.png`;
+    check();
     anchor.click();
-    setTimeout(() => URL.revokeObjectURL(output), 1000);
+    downloaded = true;
+    const downloadedUrl = output;
+    setTimeout(() => URL.revokeObjectURL(downloadedUrl), 1000);
   } finally {
+    if (output && !downloaded) URL.revokeObjectURL(output);
     URL.revokeObjectURL(url);
   }
 }

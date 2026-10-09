@@ -1,4 +1,5 @@
 export const boardEditorZh = {
+  stageLabel: '自由创作画布，单指移动，双指缩放',
   tools: {
     select: "选择",
     pan: "移动画布",

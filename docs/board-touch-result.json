@@ -1,0 +1,12 @@
+{
+  "mobile": "390x844",
+  "noOpSelection": true,
+  "touchDrag": true,
+  "pinchZoom": true,
+  "pinchNoNodeCommit": true,
+  "pointerCancelRestores": true,
+  "resizeRealtime": true,
+  "resizeCommit": true,
+  "textRetainedAfterDirectDrag": true,
+  "touchPen": true
+}

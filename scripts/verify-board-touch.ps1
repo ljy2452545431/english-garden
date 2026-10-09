@@ -1,0 +1,26 @@
+param([Parameter(Mandatory=$true)][string]$CliPath)
+$ErrorActionPreference='Stop'
+$taskCode=@'
+async page=>{
+const context=await page.context().browser().newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});const p=await context.newPage();const cdp=await context.newCDPSession(p);
+async function send(type,touchPoints){await cdp.send('Input.dispatchTouchEvent',{type,touchPoints});}
+async function location(){return p.evaluate(()=>{const s=window.Konva.stages.at(-1),g=s.find('Group').filter(g=>g.getAttr('boardNodeId')).at(-1),r=s.container().getBoundingClientRect(),a=g.getAbsolutePosition();return {x:r.x+a.x,y:r.y+a.y,node:{x:g.x(),y:g.y(),width:g.width(),height:g.height(),rotation:g.rotation()},scale:s.scaleX()};});}
+try{
+await p.goto('http://127.0.0.1:4173/english-garden/');await p.getByRole('button',{name:'先体验站内课程',exact:true}).click();await p.locator('.bottom-nav').getByRole('button',{name:'我的花园',exact:true}).click();await p.getByRole('button',{name:'打开创作画布',exact:true}).click();await p.locator('.board-stage canvas').first().waitFor();await p.getByRole('button',{name:'便签',exact:true}).click();await p.getByRole('button',{name:'完成文字',exact:true}).click();await p.waitForTimeout(400);
+await p.evaluate(()=>{window.__puts=0;const original=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(...args){window.__puts++;return original.apply(this,args);};});
+let a=await location();await send('touchStart',[{x:a.x,y:a.y,id:1}]);await send('touchEnd',[]);await p.waitForTimeout(350);if(!await p.evaluate(()=>window.__puts===0))throw Error('单击生成了草稿写入');
+await send('touchStart',[{x:a.x,y:a.y,id:1}]);await send('touchMove',[{x:a.x+20,y:a.y+15,id:1}]);await send('touchEnd',[]);await p.waitForTimeout(350);let b=await location();if(a.node.x===b.node.x&&a.node.y===b.node.y)throw Error('单指移动未提交');
+let before=await location();await send('touchStart',[{x:before.x-30,y:before.y,id:1}]);await send('touchStart',[{x:before.x-30,y:before.y,id:1},{x:before.x+30,y:before.y,id:2}]);await send('touchMove',[{x:before.x-50,y:before.y-10,id:1},{x:before.x+50,y:before.y+10,id:2}]);await send('touchEnd',[]);await p.waitForTimeout(200);let after=await location();if(after.scale<=before.scale||after.node.x!==before.node.x||after.node.y!==before.node.y)throw Error('双指缩放或误提交节点 '+JSON.stringify({before,after}));
+let cancelled=await location();await send('touchStart',[{x:cancelled.x,y:cancelled.y,id:1}]);await send('touchMove',[{x:cancelled.x+12,y:cancelled.y+8,id:1}]);await send('touchCancel',[]);await p.waitForTimeout(150);const restored=await location();if(restored.node.x!==cancelled.node.x||restored.node.y!==cancelled.node.y)throw Error('取消手势没有恢复');
+const anchor=await p.evaluate(()=>{const s=window.Konva.stages.at(-1),t=s.findOne('Transformer'),a=t.findOne('.bottom-right'),pos=a.getAbsolutePosition(),r=s.container().getBoundingClientRect();return {x:r.x+pos.x,y:r.y+pos.y};});const originalSize=await location();await send('touchStart',[{x:anchor.x,y:anchor.y,id:1}]);await send('touchMove',[{x:anchor.x+25,y:anchor.y+20,id:1}]);await p.waitForTimeout(80);const previewScale=await p.evaluate(()=>window.Konva.stages.at(-1).findOne('Transformer').nodes()[0].scaleX());await send('touchEnd',[]);await p.waitForTimeout(350);const resized=await location();if(resized.node.width===originalSize.node.width||previewScale===1)throw Error('真实手柄缩放未提交或没有实时preview');
+await p.getByRole('button',{name:'编辑内容',exact:true}).click();await p.locator('textarea').fill('刚输入直接拖动保留');let textStart=await location();const textPoint={x:textStart.x,y:textStart.y-textStart.node.height*textStart.scale*.25,id:1};await send('touchStart',[textPoint]);await send('touchMove',[{...textPoint,x:textPoint.x+15,y:textPoint.y+8}]);await send('touchEnd',[]);await p.waitForTimeout(350);const retainedText=await p.evaluate(()=>window.Konva.stages.at(-1).find('Group').filter(g=>g.getAttr('boardNodeId')).at(-1).findOne('Text').text());if(retainedText!=='刚输入直接拖动保留')throw Error('刚输入文字在直接拖动时丢失');const textMoved=await location();if(textMoved.node.x===textStart.node.x&&textMoved.node.y===textStart.node.y)throw Error('文字直接拖动场景没有实际移动');
+await p.getByRole('button',{name:'画笔',exact:true}).click();const canvas=await p.locator('.board-stage').boundingBox();const p1={x:canvas.x+80,y:canvas.y+80,id:1};await send('touchStart',[p1]);await send('touchMove',[{...p1,x:p1.x+12,y:p1.y+10}]);await send('touchMove',[{...p1,x:p1.x+25,y:p1.y+20}]);await send('touchEnd',[]);await p.waitForTimeout(350);const count=await p.evaluate(()=>window.Konva.stages.at(-1).find('Group').filter(g=>g.getAttr('boardNodeId')).length);if(count!==2)throw Error('单指手绘未提交');
+await page.evaluate(result=>window.__touchStage=result,{mobile:'390x844',noOpSelection:true,touchDrag:true,pinchZoom:true,pinchNoNodeCommit:true,pointerCancelRestores:true,resizeRealtime:true,resizeCommit:true,textRetainedAfterDirectDrag:true,touchPen:true});
+}finally{await context.close();}
+}
+'@
+$taskCli=$CliPath
+$taskOutput=& node $taskCli -s=perfeditor run-code $taskCode 2>&1
+$taskError=[regex]::Match(($taskOutput -join [Environment]::NewLine),'(?s)### Error(.*?)(### Ran|$)')
+if($LASTEXITCODE -ne 0 -or $taskError.Success){if($taskError.Success){Write-Output $taskError.Groups[1].Value};throw '画布真实触摸验证失败'}
+& node $taskCli -s=perfeditor eval 'JSON.stringify(window.__touchStage)'

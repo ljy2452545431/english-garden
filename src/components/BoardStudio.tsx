@@ -14,35 +14,23 @@ import {
   type BoardDocument,
   type BoardSummary,
 } from "../utils/board";
-import {
-  readDraft,
-  writeDraft,
-  writeImage,
-  type BoardDraft,
-} from "../utils/board-storage";
-import { prepareImage, exportBoardPng } from "../utils/board-images";
+import { readDraft, writeImage, type BoardDraft } from "../utils/board-storage";
+import { prepareImage } from "../utils/board-images";
 import { boardStudioText as t } from "../i18n/board-studio";
-import {
-  Palette,
-  ArrowUpRight,
-  RefreshCw,
-  Download,
-  Image as ImageIcon,
-} from "./icons";
+import { Palette, ArrowUpRight, RefreshCw, Image as ImageIcon } from "./icons";
 import "../styles/board-studio.css";
+import {
+  createDraftWriter,
+  waitForDraftWrites,
+} from "../utils/board-draft-writer";
 
 const Editor = lazy(() =>
   import("./BoardEditor").then((module) => ({ default: module.BoardEditor })),
 );
-const View = lazy(() =>
-  import("./BoardEditor/BoardView").then((module) => ({
-    default: module.BoardView,
-  })),
-);
 type Props = { garden: Garden; onApply: (id: string) => void };
 const newDraft = (): BoardDraft => ({
   title: t.defaultTitle,
-  document: emptyBoard(),
+  document: { ...emptyBoard(), width: 900, height: 1200 },
 });
 
 /** 身份改变立即重建子树，旧账号作品不会等待 effect 清理后才消失。 */
@@ -71,7 +59,8 @@ function BoardStudioSession({ garden, onApply }: Props) {
   const [galleryLoading, setGalleryLoading] = useState(Boolean(token));
   const [error, setError] = useState(""),
     [message, setMessage] = useState("");
-  const stage = useRef<HTMLDivElement>(null);
+  const exportGeneration = useRef(0);
+  const writer = useRef<ReturnType<typeof createDraftWriter> | null>(null);
   const latestDraft = useRef(draft);
   latestDraft.current = draft;
   const { urls, error: imageError } = useBoardImages(
@@ -100,8 +89,21 @@ function BoardStudioSession({ garden, onApply }: Props) {
 
   useEffect(() => {
     active.current = true;
+    const draftWriter = createDraftWriter(owner, (cause) => {
+      if (active.current) setError(cause.message);
+    });
+    writer.current = draftWriter;
+    const flush = () => {
+      void draftWriter.flush().catch(() => {});
+    };
+    const visibility = () => {
+      if (globalThis.document.visibilityState === "hidden") flush();
+    };
+    globalThis.addEventListener("pagehide", flush);
+    globalThis.document.addEventListener("visibilitychange", visibility);
     let cancelled = false;
-    void readDraft(owner)
+    void waitForDraftWrites(owner)
+      .then(() => readDraft(owner))
       .then((value) => {
         if (!cancelled && active.current)
           setDraft(value && validBoard(value.document) ? value : newDraft());
@@ -116,6 +118,9 @@ function BoardStudioSession({ garden, onApply }: Props) {
     return () => {
       cancelled = true;
       active.current = false;
+      globalThis.removeEventListener("pagehide", flush);
+      globalThis.document.removeEventListener("visibilitychange", visibility);
+      void draftWriter.dispose().catch(() => {});
       galleryRequest.current += 1;
     };
   }, [owner, token]);
@@ -125,9 +130,7 @@ function BoardStudioSession({ garden, onApply }: Props) {
     latestDraft.current = next;
     setDraft(next);
     setMessage("");
-    void writeDraft(owner, next).catch((cause) => {
-      if (active.current) setError((cause as Error).message);
-    });
+    writer.current?.schedule(next);
   }
 
   function beginOperation() {
@@ -163,8 +166,9 @@ function BoardStudioSession({ garden, onApply }: Props) {
   }
 
   async function save(copy = false) {
-    if (!token || !draft.title.trim() || !beginOperation()) return;
-    const submitted = draft;
+    if (!token || !latestDraft.current.title.trim() || !beginOperation())
+      return;
+    const submitted = latestDraft.current;
     setMessage(t.saving);
     try {
       const result = await saveBoard(
@@ -245,25 +249,30 @@ function BoardStudioSession({ garden, onApply }: Props) {
   }
 
   async function exportImage() {
-    const svg = stage.current?.querySelector<SVGSVGElement>(
-      ".board-export-source svg",
-    );
-    if (!svg || !beginOperation()) return;
+    if (!beginOperation()) return;
+    const snapshot = latestDraft.current;
+    const generation = ++exportGeneration.current;
     try {
-      await exportBoardPng(svg, draft.title);
+      const { exportDocument } = await import("./BoardEditor/utils/export");
+      if (!active.current || generation !== exportGeneration.current) return;
+      await exportDocument(
+        snapshot.document,
+        urls,
+        snapshot.title,
+        () => active.current && generation === exportGeneration.current,
+      );
     } catch (cause) {
-      if (active.current) setError((cause as Error).message);
+      if (active.current && generation === exportGeneration.current)
+        setError((cause as Error).message);
     } finally {
       endOperation();
     }
   }
-  const missingImages =
-    Object.values(urls).length <
-    new Set(
-      draft.document.nodes
-        .filter((node) => node.kind === "image")
-        .map((node) => node.assetId),
-    ).size;
+  function closeEditor() {
+    exportGeneration.current += 1;
+    void writer.current?.flush().catch(() => {});
+    setOpen(false);
+  }
   return (
     <section className="board-studio" aria-label={t.title}>
       <div className="board-studio-heading">
@@ -298,73 +307,28 @@ function BoardStudioSession({ garden, onApply }: Props) {
         </div>
       </div>
       {open && ready && (
-        <div ref={stage} className="board-workspace">
-          <div className="board-save-bar">
-            <label htmlFor="board-title">{t.name}</label>
-            <input
-              id="board-title"
-              maxLength={40}
-              value={draft.title}
-              onChange={(event) =>
-                update({ ...draft, title: event.target.value })
-              }
-            />
-            <div className="row flex-wrap">
-              <button
-                className="button primary"
-                disabled={busy || !token || !draft.title.trim()}
-                onClick={() => void save()}
-              >
-                {busy ? t.saving : t.save}
-              </button>
-              {draft.id && (
-                <button
-                  className="button secondary"
-                  disabled={busy || !token}
-                  onClick={() => void save(true)}
-                >
-                  {t.saveCopy}
-                </button>
-              )}
-              <button
-                className="button secondary"
-                disabled={busy || !draft.id}
-                onClick={() => {
-                  if (draft.id) {
-                    onApply(draft.id);
-                    setMessage(t.applied);
-                  }
-                }}
-              >
-                {t.apply}
-              </button>
-              <button
-                className="button secondary"
-                disabled={busy || missingImages}
-                onClick={() => void exportImage()}
-              >
-                <Download size={17} />
-                {t.export}
-              </button>
-            </div>
-          </div>
-          <p className="muted">{token ? t.local : t.auth}</p>
-          <Suspense fallback={<p role="status">{t.loading}</p>}>
-            <Editor
-              key={`${owner}:${editorSession}`}
-              document={draft.document}
-              onChange={(document: BoardDocument) =>
-                update({ ...latestDraft.current, document })
-              }
-              onUpload={upload}
-              assetUrls={urls}
-            />
-            <div className="board-export-source" aria-hidden="true">
-              <View document={draft.document} assetUrls={urls} />
-            </div>
-          </Suspense>
-          <p className="muted">{t.limit}</p>
-        </div>
+        <Suspense fallback={<p role="status">{t.loading}</p>}>
+          <Editor
+            key={`${owner}:${editorSession}`}
+            document={draft.document}
+            onChange={(document: BoardDocument) =>
+              update({ ...latestDraft.current, document })
+            }
+            onUpload={upload}
+            assetUrls={urls}
+            onExit={closeEditor}
+            title={draft.title}
+            onTitleChange={(title) => update({ ...latestDraft.current, title })}
+            onSave={() => void save()}
+            onExport={() => void exportImage()}
+            onFlushDraft={() => {
+              void writer.current?.flush().catch(() => {});
+            }}
+            canSave={Boolean(token)}
+            busy={busy}
+            status={error || imageError || message || undefined}
+          />
+        </Suspense>
       )}
       {message && (
         <p role="status" className="notice">

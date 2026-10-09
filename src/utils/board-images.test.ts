@@ -176,4 +176,45 @@ describe("图片处理与导出", () => {
     expect(f.anchor.download).toBe("我的画布.png");
     await vi.advanceTimersByTimeAsync(1000);
   });
+  it("导出中身份变化取消下载且释放临时SVG URL", async () => {
+    const f = rendering();
+    let active = true;
+    vi.stubGlobal(
+      "Image",
+      class {
+        src = "";
+        async decode() {
+          active = false;
+        }
+      },
+    );
+    await expect(
+      exportBoardPng(f.svg, "私密作品", () => active),
+    ).rejects.toThrow("导出已取消");
+    expect(f.click).not.toHaveBeenCalled();
+    expect(f.revokeObjectURL).toHaveBeenCalledWith("blob:svg");
+    const early = rendering();
+    await expect(
+      exportBoardPng(early.svg, "作品", () => false),
+    ).rejects.toThrow("导出已取消");
+    expect(early.createObjectURL).not.toHaveBeenCalled();
+    expect(early.click).not.toHaveBeenCalled();
+  });
+  it("最终下载前取消也清理已创建PNG URL", async () => {
+    const f = rendering();
+    let active = true;
+    f.createObjectURL
+      .mockReset()
+      .mockReturnValueOnce("blob:svg")
+      .mockImplementationOnce(() => {
+        active = false;
+        return "blob:png";
+      });
+    await expect(
+      exportBoardPng(f.svg, "私密作品", () => active),
+    ).rejects.toThrow("导出已取消");
+    expect(f.click).not.toHaveBeenCalled();
+    expect(f.revokeObjectURL).toHaveBeenCalledWith("blob:png");
+    expect(f.revokeObjectURL).toHaveBeenCalledWith("blob:svg");
+  });
 });

@@ -1,0 +1,34 @@
+[
+  {
+    "scenario": "normal",
+    "bytes": 86885,
+    "cpuRate": 6,
+    "viewport": "390x844",
+    "openMs": 654,
+    "typeMs": 1068,
+    "completeMs": 1879,
+    "longTasks": 5,
+    "maxTask": 149,
+    "maxRafGap": 167.30000000074506,
+    "puts": 10,
+    "maxPut": 7.199999999254942,
+    "polylines": 21,
+    "canvases": 0
+  },
+  {
+    "scenario": "stress",
+    "bytes": 8074008,
+    "cpuRate": 6,
+    "viewport": "390x844",
+    "openMs": 1667,
+    "typeMs": 10459,
+    "completeMs": 11266,
+    "longTasks": 15,
+    "maxTask": 1113,
+    "maxRafGap": 1161.0999999977648,
+    "puts": 10,
+    "maxPut": 595.6000000014901,
+    "polylines": 199,
+    "canvases": 0
+  }
+]
