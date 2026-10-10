@@ -1,0 +1,72 @@
+/* 明确按 SVG 比例预留高度，避免移动端插画溢出挤住按钮。 */
+.garden-companion .garden-stage {
+  width: 100%;
+  max-width: 310px;
+  aspect-ratio: 5 / 3;
+  margin: 0 0 18px;
+}
+.garden-companion .garden-stage .garden-scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+.garden-companion .garden-water {
+  min-height: 46px;
+  min-width: 158px;
+  margin-top: 0;
+  padding: 11px 18px;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+.garden-companion .garden-whisper {
+  margin-top: 12px;
+  line-height: 1.7;
+  max-width: 28em;
+  padding: 0 8px;
+}
+.garden-companion .water-drops {
+  z-index: 1;
+  left: 35%;
+  top: 28%;
+  width: 34%;
+  justify-content: space-between;
+  gap: 0;
+}
+.garden-companion .water-drop {
+  flex: 0 0 6px;
+  height: 13px;
+  background: #3993b7;
+  border: 1px solid #eefaff;
+  border-radius: 60% 40% 65% 35%;
+}
+@media (max-width: 800px) {
+  .hero .garden-companion {
+    margin-top: 24px;
+    padding: 20px 0 4px;
+    border-top: 1px solid var(--line);
+  }
+  .hero .garden-companion .garden-stage {
+    max-width: 250px;
+    aspect-ratio: 5 / 3;
+    margin-bottom: 20px;
+  }
+  .day-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .day-toolbar > div:first-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    align-items: baseline;
+  }
+  .day-toolbar > div:first-child > span {
+    margin: 0;
+  }
+  .day-toolbar > .row {
+    justify-content: space-between;
+    width: 100%;
+  }
+}

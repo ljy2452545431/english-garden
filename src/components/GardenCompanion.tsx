@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { Leaf, ArrowUpRight } from "./icons";
+import { Leaf, Check } from "./icons";
 import { GardenScene } from "./GardenScene";
 import { zh as t } from "../i18n/zh";
+import "./styles/garden-companion.css";
 
 /** 浇水是本机的小互动，不修改打卡、分数或搭档的真实状态。 */
 export function GardenCompanion({ motion }: { motion: string }) {
@@ -10,8 +11,10 @@ export function GardenCompanion({ motion }: { motion: string }) {
   const context = useRef<gsap.Context | null>(null);
   const waterTimeline = useRef<gsap.core.Timeline | null>(null);
   const [watered, setWatered] = useState(false);
+  const [watering, setWatering] = useState(false);
   useEffect(() => {
-    if (motion !== "full") return;
+    setWatering(false);
+    if (motion === "none") return;
     const media = gsap.matchMedia();
     media.add(
       "(prefers-reduced-motion: no-preference)",
@@ -20,6 +23,7 @@ export function GardenCompanion({ motion }: { motion: string }) {
         return () => {
           context.current = null;
           waterTimeline.current = null;
+          setWatering(false);
         };
       },
       root,
@@ -31,23 +35,30 @@ export function GardenCompanion({ motion }: { motion: string }) {
   function water() {
     setWatered(true);
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (motion !== "full" || reduced) return;
-    if (waterTimeline.current) { waterTimeline.current.invalidate().restart(); return; }
+    if (motion === "none" || reduced) {
+      setWatering(false);
+      return;
+    }
+    setWatering(true);
+    if (waterTimeline.current) {
+      waterTimeline.current.restart();
+      return;
+    }
     context.current?.add(() => {
       const leaves = root.current?.querySelectorAll(".sway");
       const drops = root.current?.querySelectorAll(".water-drop");
       if (!leaves || !drops) return;
       gsap.killTweensOf([leaves, drops]);
       waterTimeline.current = gsap
-        .timeline()
+        .timeline({ onComplete: () => setWatering(false) })
         .fromTo(
           drops,
-          { y: -34, autoAlpha: 0 },
+          { y: -24, autoAlpha: 0 },
           {
-            y: 24,
+            y: 38,
             autoAlpha: 1,
-            duration: 0.45,
-            stagger: 0.06,
+            duration: 0.65,
+            stagger: 0.09,
             ease: "power1.in",
           },
         )
@@ -55,8 +66,8 @@ export function GardenCompanion({ motion }: { motion: string }) {
         .to(
           leaves,
           {
-            rotation: -6,
-            svgOrigin: "225 204",
+            rotation: motion === "full" ? -6 : -3,
+            transformOrigin: "50% 100%",
             duration: 0.2,
             ease: "power2.out",
           },
@@ -76,18 +87,16 @@ export function GardenCompanion({ motion }: { motion: string }) {
           ))}
         </div>
       </div>
-      <button
-        type="button"
-        className="garden-water"
-        onClick={water}
-        aria-label={t.waterGarden}
-      >
-        <Leaf size={15} />
-        {t.waterGarden}
-        <ArrowUpRight size={14} />
+      <button type="button" className="garden-water" onClick={water}>
+        {watered && !watering ? <Check size={18} /> : <Leaf size={18} />}
+        {watering ? t.wateringGarden : watered ? t.waterAgain : t.waterGarden}
       </button>
       <span className="garden-whisper" role="status">
-        {watered ? t.waterEncouragement : t.gardenEncouragement}
+        {watering
+          ? t.wateringEncouragement
+          : watered
+            ? t.waterEncouragement
+            : t.gardenEncouragement}
       </span>
     </div>
   );
