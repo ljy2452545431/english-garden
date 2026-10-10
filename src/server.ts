@@ -1,4 +1,6 @@
 import { zh as t } from "./i18n/zh";
+import { serviceBase } from "./utils/service-route";
+export { prepareServiceConnection } from "./utils/service-route";
 export type User = { id: string; username: string; displayName: string };
 const API = import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "";
 const publicKey = import.meta.env.VITE_API_PUBLIC_KEY ?? "";
@@ -9,8 +11,10 @@ export async function binaryRequest(
   body?: Blob,
 ): Promise<Response> {
   if (!API) throw new Error(t.serviceNetwork);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
   try {
-    return await fetch(`${API}${path}`, {
+    return await fetch(`${serviceBase()}${path}`, {
       method: body ? "POST" : "GET",
       headers: {
         ...(publicKey ? { apikey: publicKey } : {}),
@@ -18,15 +22,23 @@ export async function binaryRequest(
         ...(body ? { "Content-Type": body.type } : {}),
       },
       ...(body ? { body } : {}),
-      signal: AbortSignal.timeout(25000),
+      signal: controller.signal,
+      redirect: "error",
     });
   } catch (error) {
     if (
+      controller.signal.aborted ||
       (error as Error).name === "TimeoutError" ||
       (error as Error).name === "AbortError"
     )
-      throw new Error(t.serviceTimeout);
-    throw new Error(t.serviceNetwork);
+      throw Object.assign(new Error(t.serviceTimeout), {
+        code: "SERVICE_TIMEOUT",
+      });
+    throw Object.assign(new Error(t.serviceNetwork), {
+      code: "NETWORK_UNREACHABLE",
+    });
+  } finally {
+    clearTimeout(timeout);
   }
 }
 export const configured = Boolean(API);
@@ -44,7 +56,7 @@ export async function request<T>(
     options.timeoutMs ?? 25000,
   );
   try {
-    const res = await fetch(`${API}${path}`, {
+    const res = await fetch(`${serviceBase()}${path}`, {
       method: method ?? (body ? "POST" : "GET"),
       headers: {
         ...(body ? { "Content-Type": "application/json" } : {}),
@@ -53,12 +65,16 @@ export async function request<T>(
       },
       ...(body ? { body: JSON.stringify(body) } : {}),
       signal: controller.signal,
+      redirect: "error",
     });
     let result;
     try {
       result = await res.json();
-    } catch {
-      throw new Error(t.serviceInvalid);
+    } catch (cause) {
+      if (cause instanceof TypeError) throw cause;
+      throw Object.assign(new Error(t.serviceInvalid), {
+        code: "INVALID_RESPONSE",
+      });
     }
     if (!res.ok || !result.success)
       throw Object.assign(
@@ -67,8 +83,14 @@ export async function request<T>(
       );
     return result.data as T;
   } catch (error) {
-    if (controller.signal.aborted) throw new Error(t.serviceTimeout);
-    if (error instanceof TypeError) throw new Error(t.serviceNetwork);
+    if (controller.signal.aborted)
+      throw Object.assign(new Error(t.serviceTimeout), {
+        code: "SERVICE_TIMEOUT",
+      });
+    if (error instanceof TypeError)
+      throw Object.assign(new Error(t.serviceNetwork), {
+        code: "NETWORK_UNREACHABLE",
+      });
     throw error;
   } finally {
     clearTimeout(timeout);
@@ -80,29 +102,20 @@ export async function uploadRecording(
   title: string,
 ) {
   if (!API) throw new Error("私密服务尚未配置");
-  const res = await fetch(
-    `${API}/api/recordings?title=${encodeURIComponent(title)}`,
-    {
-      method: "POST",
-      headers: {
-        ...(publicKey ? { apikey: publicKey } : {}),
-        Authorization: `Bearer ${token}`,
-        "Content-Type": blob.type,
-      },
-      body: blob,
-    },
+  const res = await binaryRequest(
+    `/api/recordings?title=${encodeURIComponent(title)}`,
+    token,
+    blob,
   );
   const json = await res.json();
   if (!res.ok) throw new Error(json.error?.message ?? "录音保存失败");
   return json.data;
 }
 export async function recordingUrl(token: string, id: string) {
-  const res = await fetch(`${API}/api/recordings/${encodeURIComponent(id)}`, {
-    headers: {
-      ...(publicKey ? { apikey: publicKey } : {}),
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const res = await binaryRequest(
+    `/api/recordings/${encodeURIComponent(id)}`,
+    token,
+  );
   if (!res.ok) throw new Error("无法读取录音");
   return URL.createObjectURL(await res.blob());
 }

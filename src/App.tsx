@@ -1,3 +1,4 @@
+import { ConnectionHelp } from './components/ConnectionHelp';
 import { BoardDecoration } from "./components/BoardDecoration";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -75,6 +76,7 @@ const daySkills: Skill[] = [
   "speaking",
 ];
 export default function App() {
+  const [connectionCode, setConnectionCode] = useState("");
   const garden = useGarden();
   const root = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState<Page>("today"),
@@ -696,12 +698,15 @@ export default function App() {
                   if (busy) return;
                   setBusy(true);
                   setLoginError("");
+                  setConnectionCode("");
                   try {
                     await garden.login(username, password);
                     setPassword("");
                     setLoginOpen(false);
                   } catch (e) {
                     setLoginError((e as Error).message);
+                    const code = (e as {code?: string}).code ?? "";
+                    setConnectionCode(["CONNECTION_UNAVAILABLE", "NETWORK_UNREACHABLE", "SERVICE_TIMEOUT"].includes(code) ? code : "");
                   } finally {
                     setBusy(false);
                   }
@@ -747,6 +752,7 @@ export default function App() {
                 </button>
               </>
             )}
+            {loginError && connectionCode && <ConnectionHelp key={connectionCode + loginError} code={connectionCode} />}
             {loginError && (
               <p className="notice" role="alert">
                 {loginError}

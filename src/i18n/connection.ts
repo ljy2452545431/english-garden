@@ -1,0 +1,15 @@
+export const connectionText = {
+  details: "查看连接诊断",
+  hint: "两条线路都不可用时，可把下面的诊断文字发给维护者。里面不包含账号、密码或学习内容。",
+  report: "连接诊断信息",
+  copy: "复制诊断信息",
+  copied: "诊断已复制",
+  copyFailed: "请长按上方文字，选择复制。",
+  site: "当前网址",
+  time: "发生时间",
+  code: "错误类型",
+  online: "浏览器报告联网",
+  browser: "浏览器",
+  yes: "是",
+  no: "否",
+} as const;
