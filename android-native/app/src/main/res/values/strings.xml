@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">英语花园</string>
+    <string name="load_error">页面暂时无法打开，请检查网络后重试。</string>
+    <string name="retry">重新打开</string>
+    <string name="no_browser">未找到可打开此链接的应用</string>
+    <string name="download_local">请在系统浏览器中下载此文件</string>
+    <string name="microphone_denied">未允许麦克风，可在系统设置中为英语花园开启。</string>
+    <string name="exit_title">结束这次学习？</string>
+    <string name="exit_message">已同步的记录会保留；未保存的录音或编辑请先保存。</string>
+    <string name="exit">退出</string>
+    <string name="stay">继续学习</string>
+    <string name="export_saved">已保存到你选择的位置</string>
+    <string name="export_failed">未能保存文件，请重试。支持 20 MB 以内的图片、录音和 JSON 文件。</string>
+</resources>

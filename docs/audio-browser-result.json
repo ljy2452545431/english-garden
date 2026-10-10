@@ -1,12 +1,12 @@
 {
-  "time": "2026-10-10T04:55:10.391Z",
-  "url": "http://127.0.0.1:4173/english-garden/",
+  "time": "2026-10-10T05:01:28.137Z",
+  "url": "https://ljy2452545431.github.io/english-garden/",
   "scope": "Chrome390×844，真实音频、禁用语音API；非小米真机证明",
   "results": [
     "语音接口缺失时单词MP3实际解码播放",
     {
       "listening": {
-        "seconds": 0.102444,
+        "seconds": 0.113994,
         "duration": 32.546485,
         "rate": 0.85,
         "paused": false
