@@ -27,6 +27,8 @@ try {
   for (const [index, mode] of [
     "primary-blocked",
     "alternate-blocked",
+    "slow-health",
+    "read-failover",
     "both-blocked",
     "invalid-password",
   ].entries()) {
@@ -34,6 +36,7 @@ try {
       viewport: { width: 390, height: 844 },
     });
     const page = await context.newPage();
+    let loggedIn = false;
     const posts = [];
     page.on("request", (req) => {
       if (req.method() === "POST" && req.url().endsWith("/api/login"))
@@ -42,6 +45,13 @@ try {
     await context.route("**/*.supabase.co/**", async (route) => {
       const url = route.request().url();
       const alternate = new URL(url).hostname.includes(".functions.");
+      if (mode === "slow-health" && url.endsWith("/health"))
+        await new Promise((resolve) => setTimeout(resolve, 4100));
+      if (
+        mode === "read-failover" &&
+        ((!loggedIn && alternate) || (loggedIn && !alternate))
+      )
+        return route.abort();
       if (
         mode === "both-blocked" ||
         (mode === "primary-blocked" && !alternate) ||
@@ -68,8 +78,12 @@ try {
     const account = accounts[index % 2];
     await page.locator("#username").fill(account.username);
     await page.locator("#password").fill(account.password);
-    const successfulMode =
-      mode === "primary-blocked" || mode === "alternate-blocked";
+    const successfulMode = [
+      "primary-blocked",
+      "alternate-blocked",
+      "slow-health",
+      "read-failover",
+    ].includes(mode);
     const responsePromise = successfulMode
       ? page.waitForResponse(
           (r) =>
@@ -80,13 +94,14 @@ try {
     await page
       .locator("form button[type=submit], form button.button.primary")
       .click();
-    if (mode.endsWith("blocked") && mode !== "both-blocked") {
+    if (successfulMode) {
       await page
         .locator("#username")
-        .waitFor({ state: "hidden", timeout: 18000 });
+        .waitFor({ state: "hidden", timeout: 27000 });
       if (
         posts.length !== 1 ||
-        posts[0].includes(".functions.") !== (mode === "primary-blocked")
+        (mode !== "slow-health" &&
+          posts[0].includes(".functions.") !== (mode === "primary-blocked"))
       )
         throw new Error(mode + ": 登录线路/请求次数不符");
       const response = await responsePromise;
@@ -98,6 +113,57 @@ try {
         !Number.isSafeInteger(data.learning.version)
       )
         throw new Error("真实身份或学习状态断言失败");
+      if (mode === "read-failover") {
+        loggedIn = true;
+        const recovered = page.waitForResponse(
+          (r) =>
+            r.url().includes(".functions.supabase.co/") &&
+            r.url().endsWith("/api/space") &&
+            r.status() === 200,
+        );
+        await page
+          .locator(".bottom-nav")
+          .getByRole("button", { name: "两人空间", exact: true })
+          .click();
+        const space = await (await recovered).json();
+        if (
+          !space.success ||
+          !Array.isArray(space.data?.users) ||
+          space.data.users.length !== 2
+        )
+          throw new Error("备用线路未返回完整双人空间");
+        await page.locator(".partner-card").first().waitFor();
+        const freshRequests = [];
+        page.on("request", (r) => {
+          if (r.url().endsWith("/api/space"))
+            freshRequests.push(new URL(r.url()).hostname);
+        });
+        const refreshed = page.waitForResponse(
+          (r) => r.url().endsWith("/api/space") && r.status() === 200,
+        );
+        await page
+          .getByRole("button", { name: "刷新两人空间", exact: true })
+          .click();
+        await refreshed;
+        if (
+          freshRequests.length !== 1 ||
+          !freshRequests[0].includes(".functions.")
+        )
+          throw new Error("未记住业务成功线路");
+        await page.locator(".profile-button").click();
+        await page.getByText("查看连接诊断", { exact: true }).click();
+        const activeReport = await page
+          .getByRole("textbox", { name: "连接诊断信息" })
+          .inputValue();
+        if (
+          !activeReport.includes("SESSION_ACTIVE") ||
+          !activeReport.includes(
+            "当前请求线路（不代表此刻仍可达）: cdhmiwrhirjntpelgnvq.functions.supabase.co",
+          )
+        )
+          throw new Error("成功登录后未显示实际选中线路");
+        await page.locator(".modal-close").click();
+      }
       const logout = await context.request.post(
         response.url().replace("/api/login", "/api/logout"),
         {
@@ -122,6 +188,7 @@ try {
           .inputValue();
         if (
           !diagnostic.includes("CONNECTION_UNAVAILABLE") ||
+          !diagnostic.includes("网络请求失败") ||
           diagnostic.includes(account.password) ||
           /Bearer|token/i.test(diagnostic)
         )

@@ -83,7 +83,7 @@ it("错误响应内容/HTTP失败都不被当作健康，失败可在下一次�
   expect(await custom.prepare()).toBe("http://localhost:8787");
   expect(fetcher).toHaveBeenCalledTimes(4);
 });
-it("3000ms总上限覆盖悬挂fetch，超时后的迟到健康不能更改选定线路", async () => {
+it("10000ms总上限覆盖悬挂fetch，超时后的迟到健康不能更改选定线路", async () => {
   vi.useFakeTimers();
   let resolve!: (response: Response) => void;
   const fetcher = vi.fn(() => new Promise<Response>((r) => (resolve = r)));
@@ -91,7 +91,7 @@ it("3000ms总上限覆盖悬挂fetch，超时后的迟到健康不能更改选�
   const check = expect(route.prepare(30000)).rejects.toMatchObject({
     code: "CONNECTION_UNAVAILABLE",
   });
-  await vi.advanceTimersByTimeAsync(3001);
+  await vi.advanceTimersByTimeAsync(10001);
   await check;
   resolve(healthy());
   await Promise.resolve();
@@ -102,4 +102,107 @@ it("3000ms总上限覆盖悬挂fetch，超时后的迟到健康不能更改选�
     code: "CONNECTION_UNAVAILABLE",
   });
   expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it("默认预算允许4秒返回，成功取消未完成线路且快照隔离", async () => {
+  vi.useFakeTimers();
+  const fetcher = vi.fn((url: RequestInfo | URL) =>
+    String(url).startsWith(primary)
+      ? new Promise<Response>((resolve) =>
+          setTimeout(() => resolve(healthy()), 4000),
+        )
+      : new Promise<Response>(() => {}),
+  );
+  const route = createServiceRoute(primary, fetcher);
+  const result = route.prepare();
+  const pending = route.diagnostics();
+  await vi.advanceTimersByTimeAsync(4000);
+  expect(await result).toBe(primary);
+  expect(route.diagnostics().map((item) => item.status)).toEqual([
+    "healthy",
+    "cancelled",
+  ]);
+  expect(route.diagnostics()[0].durationMs).toBe(4000);
+  expect(pending.every((item) => item.status === "pending")).toBe(true);
+  pending[0].status = "network";
+  expect(route.diagnostics()[0].status).toBe("healthy");
+});
+it("区分网络失败和超时，失败报告只包含脱敏诊断", async () => {
+  vi.useFakeTimers();
+  const route = createServiceRoute(
+    primary,
+    vi.fn((url: RequestInfo | URL) =>
+      String(url).startsWith(primary)
+        ? Promise.reject(new TypeError("private body must not leak"))
+        : new Promise<Response>(() => {}),
+    ),
+  );
+  const result = expect(route.prepare(200)).rejects.toMatchObject({
+    code: "CONNECTION_UNAVAILABLE",
+    diagnostics: [
+      { status: "network" },
+      { status: "timeout", durationMs: 200 },
+    ],
+  });
+  await vi.advanceTimersByTimeAsync(201);
+  await result;
+  expect(JSON.stringify(route.diagnostics())).not.toContain("private");
+  expect(route.diagnostics().every((item) => !item.host.includes("/"))).toBe(
+    true,
+  );
+});
+it("重试清空旧诊断，旧请求迟到不能污染本轮", async () => {
+  vi.useFakeTimers();
+  const resolvers: Array<(response: Response) => void> = [];
+  const route = createServiceRoute(
+    primary,
+    vi.fn(() => new Promise<Response>((resolve) => resolvers.push(resolve))),
+  );
+  const old = expect(route.prepare(100)).rejects.toMatchObject({
+    code: "CONNECTION_UNAVAILABLE",
+  });
+  await vi.advanceTimersByTimeAsync(101);
+  await old;
+  const retry = route.prepare();
+  expect(route.diagnostics().every((item) => item.status === "pending")).toBe(
+    true,
+  );
+  resolvers[1](healthy());
+  await vi.advanceTimersByTimeAsync(1);
+  expect(route.diagnostics().every((item) => item.status === "pending")).toBe(
+    true,
+  );
+  resolvers[2](healthy());
+  await retry;
+  const snapshot = route.diagnostics();
+  resolvers[3](healthy());
+  await vi.advanceTimersByTimeAsync(1);
+  expect(route.diagnostics()).toEqual(snapshot);
+  expect(route.base()).toBe(primary);
+});
+it("默认预算为10秒，HTTP和无效正文诊断保留状态码", async () => {
+  const route = createServiceRoute(
+    primary,
+    vi
+      .fn()
+      .mockResolvedValueOnce(new Response("not json", { status: 200 }))
+      .mockResolvedValueOnce(new Response("unavailable", { status: 503 })),
+  );
+  await expect(route.prepare()).rejects.toMatchObject({
+    code: "CONNECTION_UNAVAILABLE",
+  });
+  expect(route.diagnostics()).toEqual([
+    expect.objectContaining({ status: "invalid", httpStatus: 200 }),
+    expect.objectContaining({ status: "http", httpStatus: 503 }),
+  ]);
+});
+it("只允许同项目完整业务成功后确认的线路，不能指定任意域名", () => {
+  const route = createServiceRoute(primary);
+  expect(route.confirm(backup)).toBe(true);
+  expect(route.base()).toBe(backup);
+  expect(route.confirm("https://attacker.invalid")).toBe(false);
+  expect(route.base()).toBe(backup);
+  expect(createServiceRoute("http://localhost:8787").confirm(backup)).toBe(
+    false,
+  );
 });

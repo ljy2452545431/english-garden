@@ -11,23 +11,23 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 describe("登录并加载学习记录", () => {
-  it("线路不可达不发送密码，探测耗时包含在总预算内", async () => {
+  it("线路不可达不发送密码，慢探测成功后仍有15秒登录预算", async () => {
     const { loginAndLoad } = await import("./auth");
     prepareServiceConnection.mockRejectedValueOnce(new Error("线路不可达"));
     await expect(loginAndLoad("ljy", "example")).rejects.toThrow("线路不可达");
     expect(request).not.toHaveBeenCalled();
-    prepareServiceConnection.mockResolvedValueOnce(undefined);
-    vi.spyOn(Date, "now")
-      .mockReturnValueOnce(1000)
-      .mockReturnValueOnce(4000)
-      .mockReturnValueOnce(5000);
+    let clock = 1000;
+    prepareServiceConnection.mockImplementationOnce(async () => {
+      clock += 4000;
+    });
+    vi.spyOn(Date, "now").mockImplementation(() => clock);
     request.mockResolvedValueOnce({
       ...session,
       learning: { version: 1, state: {} },
     });
     await loginAndLoad("ljy", "example");
-    expect(request.mock.calls[0][4]).toEqual({ timeoutMs: 12000 });
-    expect(prepareServiceConnection).toHaveBeenCalledWith(3000);
+    expect(request.mock.calls[0][4]).toEqual({ timeoutMs: 15000 });
+    expect(prepareServiceConnection).toHaveBeenCalledWith(10000);
   });
 
   it("合并响应一次请求即可完成，保留云端版本", async () => {

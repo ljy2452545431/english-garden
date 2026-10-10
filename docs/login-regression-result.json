@@ -1,32 +1,32 @@
 {
-  "time": "2026-10-10T04:39:12.225Z",
+  "time": "2026-10-10T09:34:05.398Z",
   "scope": "两账号串行小样本，真实登录与数据库读取；不作为容量/P95/P99达标证明",
   "samples": [
     {
       "user": "ljy",
       "round": 1,
-      "loginAndStateMs": 3025,
+      "loginAndStateMs": 4373,
       "businessSuccess": true,
       "matchingDatabaseState": true
     },
     {
       "user": "jfl",
       "round": 1,
-      "loginAndStateMs": 2332,
+      "loginAndStateMs": 2760,
       "businessSuccess": true,
       "matchingDatabaseState": true
     },
     {
       "user": "ljy",
       "round": 2,
-      "loginAndStateMs": 2515,
+      "loginAndStateMs": 2594,
       "businessSuccess": true,
       "matchingDatabaseState": true
     },
     {
       "user": "jfl",
       "round": 2,
-      "loginAndStateMs": 2026,
+      "loginAndStateMs": 1485,
       "businessSuccess": true,
       "matchingDatabaseState": true
     }

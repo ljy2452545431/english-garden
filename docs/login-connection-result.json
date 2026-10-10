@@ -1,32 +1,46 @@
 {
-  "time": "2026-10-10T04:43:11.513Z",
+  "time": "2026-10-10T09:35:48.370Z",
   "scope": "390×844 Chromium；客户端隔离故障，不代表用户手机运营商网络或容量验收",
   "results": [
     {
       "mode": "primary-blocked",
       "passed": true,
-      "elapsedMs": 7177,
+      "elapsedMs": 7686,
       "loginPosts": 1,
       "loginHost": "cdhmiwrhirjntpelgnvq.functions.supabase.co"
     },
     {
       "mode": "alternate-blocked",
       "passed": true,
-      "elapsedMs": 5138,
+      "elapsedMs": 6309,
+      "loginPosts": 1,
+      "loginHost": "cdhmiwrhirjntpelgnvq.supabase.co"
+    },
+    {
+      "mode": "slow-health",
+      "passed": true,
+      "elapsedMs": 8019,
+      "loginPosts": 1,
+      "loginHost": "cdhmiwrhirjntpelgnvq.functions.supabase.co"
+    },
+    {
+      "mode": "read-failover",
+      "passed": true,
+      "elapsedMs": 12550,
       "loginPosts": 1,
       "loginHost": "cdhmiwrhirjntpelgnvq.supabase.co"
     },
     {
       "mode": "both-blocked",
       "passed": true,
-      "elapsedMs": 64,
+      "elapsedMs": 89,
       "loginPosts": 0,
       "loginHost": null
     },
     {
       "mode": "invalid-password",
       "passed": true,
-      "elapsedMs": 840,
+      "elapsedMs": 338,
       "loginPosts": 1,
       "loginHost": "cdhmiwrhirjntpelgnvq.supabase.co"
     }

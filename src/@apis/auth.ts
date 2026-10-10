@@ -7,10 +7,10 @@ export interface LoginSession {
 }
 const LOGIN_BUDGET_MS = 15000;
 
-/** 新服务一次返回身份和学习记录；旧服务共用同一超时预算兼容读取。 */
+/** 连接检测最多10秒；成功后登录及旧服务兼容读取共用15秒预算。 */
 export async function loginAndLoad(username: string, password: string) {
+  await prepareServiceConnection(10000);
   const started = Date.now();
-  await prepareServiceConnection(3000);
   const loginRemaining = LOGIN_BUDGET_MS - (Date.now() - started);
   if (loginRemaining <= 0) throw new Error(t.serviceTimeout);
   const session = await request<LoginSession>(

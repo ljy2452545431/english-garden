@@ -675,6 +675,7 @@ export default function App() {
             {garden.auth ? (
               <>
                 <p>当前账号：{garden.auth.user.displayName}</p>
+                <ConnectionHelp code="SESSION_ACTIVE" />
                 <button
                   className="button secondary"
                   onClick={async () => {
