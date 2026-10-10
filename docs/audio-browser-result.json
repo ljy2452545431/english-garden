@@ -1,0 +1,19 @@
+{
+  "time": "2026-10-10T04:55:10.391Z",
+  "url": "http://127.0.0.1:4173/english-garden/",
+  "scope": "Chrome390×844，真实音频、禁用语音API；非小米真机证明",
+  "results": [
+    "语音接口缺失时单词MP3实际解码播放",
+    {
+      "listening": {
+        "seconds": 0.102444,
+        "duration": 32.546485,
+        "rate": 0.85,
+        "paused": false
+      },
+      "stopPassed": true
+    },
+    "网络失败明确提示，手动重试恢复播放",
+    "切换任务停止旧音频"
+  ]
+}

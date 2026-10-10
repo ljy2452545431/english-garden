@@ -13,7 +13,7 @@ export type Skill='vocabulary'|'reading'|'listening'|'grammar'|'writing'|'speaki
 const skills=[['vocabulary',t.vocab,Leaf],['listening',t.listening,Headphones],['reading',t.reading,BookOpen],['grammar',t.grammar,Languages],['writing',t.writing,PenLine],['speaking',t.speaking,Mic]] as const;
 export function Classroom({lesson,garden,initialSkill='vocabulary'}:{lesson:WeeklyLesson;garden:Garden;initialSkill?:Skill}){
  const [skill,setSkill]=useState<Skill>(initialSkill),[showText,setShowText]=useState(false),[wordIndex,setWordIndex]=useState(0),[flipped,setFlipped]=useState(false),[feedback,setFeedback]=useState(''),[busy,setBusy]=useState(false),[task,setTask]=useState<'task1'|'task2'>('task2');
- const speech=useSpeech();const {state,update,auth}=garden;
+ const speech=useSpeech(lesson.week);const {state,update,auth}=garden;
  const key=`${lesson.week}.${skill}`; const draftKey=`${key}.${skill==='writing'?task:'transcript'}`;
  const draft=state.notes[draftKey]??'';
  function result(r:{correct:number;total:number;wrongIds:string[]}){update(prev=>({...prev,attempts:{...prev.attempts,[key]:{...r,date:dateKey()}}}));}
